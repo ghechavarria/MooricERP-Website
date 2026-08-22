@@ -37,18 +37,17 @@ export function HeroCopy({
             <span className="hero-copy__headline-line">Intelligent mortgage platform</span>
             <span className="hero-copy__headline-accent">Empowering better closings</span>
           </h1>
-        </>
-      ) : null}
-
-      {mode !== "lead" ? (
-        <>
-          {mode === "support" ? (
+          {mode === "lead" ? (
             <p className="hero-copy__badge">
               <span className="hero-copy__badge-dot" aria-hidden />
               <span>AI-powered · built for independent loan officers</span>
             </p>
           ) : null}
+        </>
+      ) : null}
 
+      {mode !== "lead" ? (
+        <>
           <div className={mode === "support" ? "hero-copy__cluster" : undefined}>
             {mode === "support" ? (
               <h2 className="hero-copy__headline hero-copy__headline--tag">

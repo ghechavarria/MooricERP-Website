@@ -38,7 +38,7 @@ export function Hero() {
         <div className="relative flex w-full min-h-0 flex-1 flex-col">
           <HeroSessionPulse>
             <p className="sr-only">
-              Decorative session strip above; main headline and editorial photo follow.
+              Decorative session strip above; main headline and editorial video follow.
             </p>
             <div className="hero-photo-stack">
               <div className="hero-photo-stage">
@@ -47,6 +47,7 @@ export function Hero() {
                   alt={SITE_PHOTOS.hero.alt}
                   objectPosition={SITE_PHOTOS.hero.objectPosition}
                   caption={SITE_PHOTOS.hero.caption}
+                  videoSrc={SITE_PHOTOS.hero.video}
                   side="right"
                   eager
                   rip

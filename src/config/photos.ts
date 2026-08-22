@@ -3,6 +3,7 @@ export const SITE_PHOTOS = {
     src: "/images/photos/premium_photo-1722945721854-7f3ab4035a89.jpg",
     alt: "Overhead view of a loan officer working at a clean desk with a monitor, folders, and plants",
     objectPosition: "58% 46%",
+    video: "/videos/853840-hd_1920_1080_25fps.mp4",
     caption: "One desk. One file.",
   },
   features: {

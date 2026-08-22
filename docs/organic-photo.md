@@ -9,7 +9,8 @@ On two-column layouts, outer corners are rounded (`1.5rem`) except the Pipeline 
 [`src/components/OrganicPhoto.tsx`](../src/components/OrganicPhoto.tsx) renders:
 
 - `side: "left" | "right"` — inner edge fades toward the copy (non-hero)
-- `rip` — hero only: `#0075ff` overlay at 80% opacity
+- `rip` — hero only: `#0075ff` overlay at 70% opacity
+- `videoSrc` — hero only: muted looping MP4; `src` is the poster still
 - Optional `caption` — mono / uppercase, white over the photo
 - `object-cover` + per-photo `objectPosition`
 - `eager` for the hero (LCP); others lazy-load
@@ -22,7 +23,7 @@ Paths and captions are in [`src/config/photos.ts`](../src/config/photos.ts).
 
 | Slot | File | Side | Caption |
 |------|------|------|---------|
-| Hero intro | `premium_photo-1722945721854-7f3ab4035a89.jpg` | right | One desk. One file. |
+| Hero intro | `premium_photo-1722945721854-7f3ab4035a89.jpg` (poster) + `853840-hd_1920_1080_25fps.mp4` | right | One desk. One file. |
 | Problem intro | `vitaly-gariev-sziDbsUZsok-unsplash.jpg` | right | The overhead between deals |
 
 Problem crop: `object-position: right 28%` so the man on the right stays in frame as the photo is covered.
