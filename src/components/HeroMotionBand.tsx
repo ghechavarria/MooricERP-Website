@@ -83,6 +83,7 @@ export function HeroMotionBand() {
       )}
 
       <div className="layout-shell relative z-10 flex flex-col items-center py-36 text-center sm:py-48 lg:py-56">
+        <div className="flex w-full flex-col items-center sm:w-[55%]">
         <motion.p
           className="flex items-center gap-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.35em] text-accent-light"
           initial={reduceMotion ? undefined : { opacity: 0, y: 8 }}
@@ -96,17 +97,17 @@ export function HeroMotionBand() {
           Mortgage pipeline
         </motion.p>
 
-        <div className="relative mt-10">
+        <div className="relative mt-10 w-full">
           {!reduceMotion ? (
             <motion.span
-              className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-[min(92vw,540px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-3xl"
+              className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-3xl"
               aria-hidden
               animate={{ opacity: [0.25, 0.5, 0.25], scale: [0.96, 1.06, 0.96] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             />
           ) : null}
           <motion.p
-            className="relative z-10 bg-gradient-to-r from-accent via-white to-accent bg-[length:200%_100%] bg-clip-text font-display text-3xl font-extrabold uppercase tracking-[0.12em] text-transparent sm:text-5xl sm:tracking-[0.22em] md:text-6xl md:tracking-[0.26em] lg:text-7xl lg:tracking-[0.28em] animate-shimmer-slow"
+            className="relative z-10 bg-gradient-to-r from-accent via-white to-accent bg-[length:200%_100%] bg-clip-text font-display text-3xl font-extrabold uppercase tracking-[0.12em] text-transparent sm:text-5xl sm:tracking-[0.18em] md:text-6xl md:tracking-[0.2em] lg:text-7xl lg:tracking-[0.22em] animate-shimmer-slow"
             initial={reduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -116,10 +117,11 @@ export function HeroMotionBand() {
           </motion.p>
         </div>
 
-        <p className="relative z-10 mt-12 max-w-md text-sm leading-relaxed text-slate-200/95 [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
+        <p className="relative z-10 mt-12 w-full text-sm leading-relaxed text-slate-200/95 [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">
           The entire broker-side process — pipeline, conditions, and closing deadlines — one
           workspace, built for how independent LOs and broker shops actually work.
         </p>
+        </div>
       </div>
     </div>
   );

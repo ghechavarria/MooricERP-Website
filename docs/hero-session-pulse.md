@@ -11,7 +11,7 @@ Decorative **session pulse** for the marketing hero: a **live-styled** monitor s
 Used from [Hero.tsx](../src/components/Hero.tsx) as a full-bleed slab:
 
 1. **Session pulse bar** — Live pill, “Session pulse” label, rotating status (shortened below `sm`, hidden below 400px), ECG wave. Instrument chrome is **`aria-hidden`**.
-2. **Children** — hero copy + demo, transparent background, `layout-header` padding.
+2. **Children** — transparent stack band between the pulse and ticker. Hero copy applies `layout-header` padding; the editorial photo is an absolute right pane (`.organic-photo--hero`).
 3. **Hero ticker** — seamless marquee of product phrases (see below).
 
 `.layout-header-px` aligns pulse/ticker content with the sticky header rail.

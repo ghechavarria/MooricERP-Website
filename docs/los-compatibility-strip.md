@@ -14,4 +14,4 @@ Wording rule: use **alongside** only — never “integrates with.”
 
 ## Layout
 
-Centered lockup (`mt-10 sm:mt-12`): circular tilted MISMO 3.4 `.glass-stamp` beside the paragraph. Solid white fill, `2.5px` `#0075ff` outer ring, dashed inner ring, inset blue band, `#0060d6` type — no backdrop blur so the seal stays sharp on white.
+Centered lockup with matching vertical space on mobile (`mt-10 mb-10`); from `sm` up, `mt-12` and section padding `sm:pb-12`. Circular tilted MISMO 3.4 `.glass-stamp` beside the paragraph. Solid white fill, `2.5px` `#0075ff` outer ring, dashed inner ring, inset blue band, `#0060d6` type — no backdrop blur so the seal stays sharp on white.

@@ -17,12 +17,10 @@ Speaks to independent LOs and broker shops who manage pipelines across spreadshe
 
 ## Layout
 
-- **Surface:** dark `#0a1626`, extra top padding (`pt-44 sm:pt-52`) so the band has room after Features; bottom padding is `0` so it meets Memory
-- **Header:** Eyebrow `04 · Closed` (mono, normal weight) + serif headline `CLOSED — Pipeline & production` + intro (Excel/spreadsheet tracking; end-to-end single view — not “replaces your LOS”)
-- Two-column grid: intro copy on the left, numbered timeline on the right
-- Mooric pipeline example panel underneath (scale-to-fit mock; see [mooric-pipeline-example-panel.md](./mooric-pipeline-example-panel.md))
-- Production glance card below the panel
-- Full-width **white** card below for closed-loan performance (`bg-white`, `border-organ-200`, blue metric values) — pops on the tinted band
+- **Surface:** dark `#0a1626`, fluid top padding after Features; bottom padding is `0` so it meets Memory. Copy and the step grid use `--page-gutter`.
+- **Header:** Eyebrow `03 · Closed` (mono, normal weight) + display headline `CLOSED — Pipeline & production` + intro
+- Intro row: copy left, [organic photo](./organic-photo.md) on the right (“Every file, one view”)
+- Three numbered steps in a grid under the intro. Below `sm` the heading and body sit beside the numeral with tighter padding and type; from `sm` up they stack under it in three columns.
 
 ## Navigation
 

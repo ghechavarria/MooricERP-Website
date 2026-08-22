@@ -1,6 +1,6 @@
 # Loan Officer Personal Assistant section
 
-Dedicated section (`#assistant`) in [LOPersonalAssistantSection.tsx](../src/components/LOPersonalAssistantSection.tsx). Rendered after **Pipeline** and before **HeroMotionBand**.
+Dedicated section (`#assistant`) in [LOPersonalAssistantSection.tsx](../src/components/LOPersonalAssistantSection.tsx). Rendered after **Memory** and before **End to end**.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Four capability cards:
 
 ## Layout
 
-- Light **neumorphic** band matching Production Glance (see [section-glass.md](./section-glass.md)); extra vertical padding `pb-40 pt-44 sm:pb-48 sm:pt-52`
+- Light **neumorphic** band matching Production Glance (see [section-glass.md](./section-glass.md)); padding `pb-16 pt-16 sm:pb-20 sm:pt-20` so it sits close to Memory above and End to end below
 - **Header:** Eyebrow `Loan Officer Personal Assistant` + centered headline + intro
 - Centered intro + 2×2 `.neu-pad` grid
 - **Cards:** Unique marks (ask / notes / bell / workspace) + title + body

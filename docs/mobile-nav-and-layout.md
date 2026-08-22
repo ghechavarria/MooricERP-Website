@@ -28,4 +28,4 @@
 ## Section tweaks
 
 - **Hero:** CTA row stacks full-width buttons on small screens.
-- **HeroMotionBand:** “Mooric ERP” headline scales down on small viewports with tighter letter-spacing to avoid overflow.
+- **HeroMotionBand:** Component kept but not mounted. “Mooric ERP” headline scales down on small viewports with tighter letter-spacing to avoid overflow.

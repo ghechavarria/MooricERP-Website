@@ -246,8 +246,8 @@ export function HeroSessionPulse({ children }: { children?: ReactNode }) {
       <SessionPulseBar tick={tick} reduceMotion={reduceMotion} />
 
       {children != null ? (
-        <div className="hero-stack-band relative z-0 flex min-h-0 flex-1 flex-col justify-center bg-transparent text-ink-950">
-          <div className="relative z-[1] w-full min-w-0 layout-header py-6 sm:py-8 lg:py-7 xl:py-8">
+        <div className="hero-stack-band relative z-0 flex min-h-0 flex-1 flex-col justify-center overflow-visible bg-transparent text-ink-950">
+          <div className="relative z-[1] flex min-h-0 w-full min-w-0 flex-1 flex-col">
             {children}
           </div>
         </div>

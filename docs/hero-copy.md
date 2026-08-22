@@ -1,25 +1,25 @@
 # Hero copy (`HeroCopy.tsx`)
 
-Site-matched left column. Desktop support order: product name → AI badge → body → CTAs. One-column (`<1100px`): AI line, then a neu cluster (billboard, body, product name), then CTAs. The top billboard stage is hidden under 1100px.
+Left navy column is one conversion stack. Desktop support order: AI badge → benefit headline → body → CTAs → stats. One-column (`<1100px`): full-bleed photo + on-photo title first, then a centered, tighter support stack (AI line, Montserrat benefit headline, body, CTAs, stats). The stacked hero is content-height — it does not stretch to the viewport. Gutters follow `--page-gutter`; see [page-spacing.md](./page-spacing.md).
 
 ## Headline
 
-Desktop billboard is two nowrap lines (`Intelligent Mortgage Platform,` white / `Empowering Better Closings` `#0075ff`) with `--hc-h1: min(2.85rem, max(0.7rem, calc(100cqi / 26)))`. Under 1100px that title moves into the cluster as the same two nowrap lines and sizes to the cluster inner width (`min(3rem, calc(100cqi / 19))`) so the longer line spans the pad. Product name (`Less chasing paperwork` / `More time closing loans`) sits directly under it in Inter 500, both lines white: `clamp(0.9375rem, 0.82rem + 0.7vw, 1.05rem)` on phones, `clamp(1.125rem, 0.85rem + 1.1vw, 1.4rem)` from 640px.
+The main title (`Intelligent mortgage platform` / `Empowering better closings`) sits **on the hero photo** in Source Serif 4 (`.hero-copy--on-photo`), sentence case, medium weight, italic second line. Size uses a smaller `cqi` clamp under 1100px and a larger one from 1100px up. The left column’s benefit line (`Less chasing paperwork` / `More time closing loans`) is white Montserrat. Under 1100px the photo is full-bleed (`aspect-ratio: 5 / 3`, `max-height: 38svh`) with the same title overlaid.
+
+## Stacked cluster
+
+`.hero-copy__cluster` is `width: 100%` below 1100px and is not a size container. Nested `container-type` plus `nowrap` headlines collapsed the stack to zero width. Benefit type reads `cqi` from `.hero-copy`. Body uses the full copy column (`width: 100%`); the `36rem` cap is desktop-only.
 
 ## Badge
 
-`inline-flex` + `width: fit-content` + `align-self: flex-start` so it stays pill-sized. In support mode on desktop it sits under the product headline (`--hc-space * 2.4`). Under 1100px it sits above `.hero-copy__cluster`, with no pill border or fill, at `clamp(0.8125rem, 0.76rem + 0.3vw, 0.9375rem)`.
+Same pill on every viewport: `inline-flex`, `width: fit-content`, blue dot, hairline border, translucent fill, nowrap label. Desktop: left-aligned above the benefit headline. Under 1100px: centered, a hair smaller than desktop.
 
 ## Platform line
 
-Product name + tagline. Desktop: above the body, `#d6e9ff`. One-column: under the main title, Inter, white.
-
-- **Name:** `Less chasing paperwork.` — Montserrat 700, title case, `#f4f7fb`, `font-size: min(1.2rem, max(1.02rem, calc(100cqi / 22)))`
-- **Tag:** `More time closing loans.` — Inter 500, sentence case, `#8ea3c4`
+Benefit claim in the left column, both lines white, Montserrat 800 uppercase. Same treatment on the stacked layout (centered).
 
 ## CTAs
 
-Primary is the only filled button. Label is `white-space: nowrap` + `width: max-content` so **Get early access — first month free** stays one line. Extra space above the actions (`--hc-space * 1.75`); the ghost link sits close under it (`gap: 0.3rem`) with a trailing `↓`. Under 1100px the button and ghost link are centered.
+Under 1100px the stack opens up: more space under the pill, between headline and body, above the CTA, and between the copy block and stats. Pane gap and rail padding also scale up on tablet.
 
-`align` (`left` \| `center`) and `mode` (`full` \| `lead` \| `support`). Billboard uses **lead** for the centered headline (desktop) and **support** for the panel. See [hero-layout-variants.md](hero-layout-variants.md).
-
+`align` (`left` \| `center`) and `mode` (`full` \| `lead` \| `support`). **lead** is the on-photo title; **support** is the left-column copy. See [hero-layout-variants.md](hero-layout-variants.md).

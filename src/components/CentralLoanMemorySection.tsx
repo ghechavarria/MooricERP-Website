@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import brainPictogram from "../assets/icons/brain-pictogram-5.svg";
+import { OrganicPhoto } from "./OrganicPhoto";
+import { SITE_PHOTOS } from "../config/photos";
 
 const contrasts = [
   {
@@ -286,7 +288,7 @@ function ConceptStepLanes() {
             {tracks.map((track, i) => (
               <div
                 key={`without-${track.label}`}
-                className={`border-b border-[#e7ebf1] p-5 sm:border-r sm:p-6 ${
+                className={`hidden border-b border-[#e7ebf1] p-5 sm:block sm:border-r sm:p-6 ${
                   i % 2 === 0 ? "bg-white" : "bg-[#fafbfc]"
                 }`}
               >
@@ -386,11 +388,21 @@ export function CentralLoanMemorySection() {
   return (
     <section
       id="memory"
-      className="section-marketing relative border-0 bg-[#0a1626]"
+      className="section-marketing relative overflow-hidden border-0 bg-[#0a1626]"
       aria-labelledby="memory-heading"
     >
       <div className="layout-shell relative z-10">
-        <MemoryIntro />
+        <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-14">
+          <MemoryIntro />
+          <OrganicPhoto
+            src={SITE_PHOTOS.memory.src}
+            alt={SITE_PHOTOS.memory.alt}
+            objectPosition={SITE_PHOTOS.memory.objectPosition}
+            caption={SITE_PHOTOS.memory.caption}
+            side="left"
+            className="lg:order-first"
+          />
+        </div>
         <ConceptStepLanes />
       </div>
     </section>

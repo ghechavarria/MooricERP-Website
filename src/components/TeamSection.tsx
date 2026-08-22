@@ -41,16 +41,21 @@ function TeamMemberCard({
     >
       <div className="team-portrait neu-pad relative mx-auto aspect-[4/5] max-w-[220px] overflow-hidden">
         {!photoFailed ? (
-          <img
-            src={`/images/team/${slug}.png`}
-            alt=""
-            width={440}
-            height={550}
-            className="h-full w-full object-cover object-center"
-            loading="lazy"
-            decoding="async"
-            onError={() => setPhotoFailed(true)}
-          />
+          <picture>
+            <source type="image/webp" srcSet={`/images/team/${slug}.webp`} />
+            <img
+              src={`/images/team/${slug}.jpg`}
+              alt=""
+              width={440}
+              height={550}
+              sizes="220px"
+              className="h-full w-full object-cover object-center"
+              loading={index < 4 ? "eager" : "lazy"}
+              fetchPriority={index < 2 ? "high" : "auto"}
+              decoding="async"
+              onError={() => setPhotoFailed(true)}
+            />
+          </picture>
         ) : (
           <div
             className="flex h-full w-full items-center justify-center bg-gradient-to-br from-ink-800 to-slate-800 font-display text-4xl font-bold text-accent-light"

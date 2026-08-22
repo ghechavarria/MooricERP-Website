@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
 
 const links = [
-  { label: "Why switch", href: "#problem" },
-  { label: "Process", href: "#features" },
-  { label: "Loan Memory", href: "#memory" },
-  { label: "The Team", href: "#team" },
+  { label: "Why switch", to: "/#problem" },
+  { label: "Process", to: "/#features" },
+  { label: "Loan Memory", to: "/#memory" },
+  { label: "The Team", to: "/team" },
 ];
 
 function MenuIcon({ open }: { open: boolean }) {
@@ -70,8 +71,8 @@ export function Header() {
     <>
     <header className="sticky inset-x-0 top-0 z-40 w-full max-w-none min-w-0 shrink-0 self-stretch border-b border-organ-200 bg-white">
       <div className="layout-header flex h-[4.25rem] items-center justify-between gap-3 min-[1440px]:gap-x-4 min-[1800px]:gap-x-6">
-        <a
-          href="#top"
+        <Link
+          to="/#top"
           className="group flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl py-1 pl-1 pr-2 sm:gap-3 sm:pr-3 min-[1440px]:gap-2.5 min-[1800px]:gap-3.5"
         >
           <span
@@ -95,18 +96,18 @@ export function Header() {
             <span className="text-organ-950">Mooric </span>
             <span className="text-erp">ERP</span>
           </span>
-        </a>
+        </Link>
 
         <div className="hidden shrink-0 items-center gap-1.5 min-[1440px]:ml-6 min-[1440px]:flex min-[1800px]:ml-14 min-[1800px]:gap-3">
           <nav className="flex items-center gap-0.5 min-[1440px]:gap-1 min-[1800px]:gap-1.5" aria-label="Primary">
             {links.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
+              <Link
+                key={item.to}
+                to={item.to}
                 className="rounded-md px-2 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-organ-800 transition hover:text-erp min-[1800px]:px-3 min-[1800px]:py-2 min-[1800px]:text-xs"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <button
@@ -167,14 +168,14 @@ export function Header() {
                 aria-label="Mobile"
               >
                 {links.map((item) => (
-                  <a
-                    key={item.href}
-                    href={item.href}
+                  <Link
+                    key={item.to}
+                    to={item.to}
                     className="rounded-lg px-3 py-3.5 font-mono text-sm font-medium uppercase tracking-[0.14em] text-organ-900 active:text-erp"
                     onClick={() => setMenuOpen(false)}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 ))}
                 <button
                   type="button"

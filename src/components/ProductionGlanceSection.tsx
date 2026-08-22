@@ -45,7 +45,7 @@ export function ProductionGlanceSection() {
   return (
     <section
       id="production-glance"
-      className="section-neu relative px-6 py-28 text-ink-950 sm:px-10 sm:py-36 lg:px-16 lg:py-40 xl:px-24"
+      className="section-neu relative text-ink-950"
       aria-label="Your production at a glance"
     >
       <motion.div
@@ -53,13 +53,13 @@ export function ProductionGlanceSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(16rem,0.9fr)] lg:gap-16"
+        className="layout-shell relative z-10 grid items-center gap-10 sm:gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(16rem,0.9fr)] lg:gap-16"
       >
         <div className="max-w-3xl">
           <p className="font-mono text-[13px] font-normal uppercase tracking-[0.22em] text-erp">
             Your production at a glance
           </p>
-          <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-ink-950 text-balance sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
+          <h2 className="mt-4 font-display text-[clamp(1.75rem,1.2rem+1.6vw,2.75rem)] font-bold leading-[1.12] tracking-tight text-ink-950 text-balance">
             Closed loan performance, without building a spreadsheet
           </h2>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-organ-800 sm:text-lg">

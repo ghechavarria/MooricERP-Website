@@ -1,6 +1,6 @@
 # Team section (`TeamSection.tsx`)
 
-Renders **`#team`** directly under the [Mooric ERP blueprint band](./hero-motion-band.md). Seven people on a **clay / neumorphic** band (same language as Production Glance).
+Renders **`#team`** on the dedicated **[`/team`](./team-page.md)** page (not on the homepage). Seven people on a **clay / neumorphic** band (same language as Production Glance).
 
 ## Layout
 
@@ -26,4 +26,4 @@ Renders **`#team`** directly under the [Mooric ERP blueprint band](./hero-motion
 | 6 | Joanne Rossi | Chief Quality and Compliance Officer | `joanne-rossi.png` |
 | 7 | Andrew Li | SVP Product Development | `andrew-li.png` |
 
-Paths: `/images/team/{slug}.png`. Missing images fall back to initials.
+Paths: `/images/team/{slug}.webp` (JPEG fallback `.jpg`). Source PNGs stay in the folder for [`optimize-team-photos.md`](./optimize-team-photos.md); the page does not load them. Missing images fall back to initials.

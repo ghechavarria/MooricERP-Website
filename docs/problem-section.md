@@ -10,12 +10,14 @@ One job: name the overhead that eats an independent LO’s day, then point into 
 
 Wired in [`src/App.tsx`](../src/App.tsx):
 
-`Hero` → **`ProblemSection`** → `CentralLoanMemorySection` → …
+`Hero` → **`ProblemSection`** → mid-page `ContactCTA` (`#early-access`) → `Features` → …
+
+An [organic photo](./organic-photo.md) sits beside the intro and fades into the navy. Crop is `object-position: right 28%` so the man on the right edge stays the focus as the frame narrows.
 
 ## Content
 
 - **Eyebrow:** `01 · The problem` (mono, `text-erp`)
-- **Headline:** Where does your day actually go? (`font-serif`, `text-ink-950`)
+- **Headline:** Where does your day actually go? (`.display-heading`, white)
 - **Support:** Overhead between borrowers / guidelines / deals; same file handled five ways in five places
 - **Four metric cards** (silver-gray tabular stats, `text-slate-500`):
   - **3×** — The same data, re-typed
@@ -26,11 +28,10 @@ Wired in [`src/App.tsx`](../src/App.tsx):
 
 ## Surface
 
-- Section: `.section-marketing` (`py-36 sm:py-44`), `scroll-mt-8`
-- Cards: `bg-white/80 border-organ-200/90`; hover `border-erp/50`, blue glow shadow, and a soft `from-erp/15 via-sky-400/10` gradient wash
-- CTA panel: `bg-white/75 border-organ-200/90`
-- Layout: `.layout-shell`; cards/CTA capped at `max-w-[1160px]`
-- Motion: Framer `whileInView` / card `whileHover` lift (same pattern as Features)
+- Section: `.section-marketing`, `scroll-mt-8`, navy
+- Metric tiles: `.problem-metric-grid` — inner hairlines only. 1 col → 2 col (`sm`) → 4 col (`lg`). Below `sm`, the title sits beside the stat (same pattern as Pipeline steps) with tighter padding. Right-edge borders are omitted on the last cell of each row (`odd` at 2-col, `4n` at 4-col) so a stray outer rule does not appear while resizing.
+- Layout: `.layout-shell`
+- Motion: Framer `whileInView`
 
 ## Files
 

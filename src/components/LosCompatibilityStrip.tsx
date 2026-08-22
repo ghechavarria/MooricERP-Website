@@ -2,7 +2,7 @@ export function LosCompatibilityStrip() {
   return (
     <aside
       id="los"
-      className="mt-10 flex flex-col items-center gap-5 sm:mt-12 sm:flex-row sm:justify-center sm:gap-8"
+      className="mt-10 mb-10 flex flex-col items-center gap-5 sm:mt-12 sm:mb-0 sm:flex-row sm:justify-center sm:gap-8"
       aria-label="LOS compatibility"
     >
       <div className="glass-stamp" aria-hidden>

@@ -86,7 +86,7 @@ export function BrokerProcessFlowSection() {
   return (
     <section
       id="process"
-      className="section-swiss relative scroll-mt-8 pb-36 pt-36 sm:pb-44 sm:pt-44"
+      className="section-swiss relative scroll-mt-8 pb-0 pt-[clamp(3.5rem,2rem+3vw,5.5rem)] sm:pb-12"
       aria-labelledby="process-heading"
     >
       <div className="layout-shell">
@@ -100,7 +100,7 @@ export function BrokerProcessFlowSection() {
           <p className="font-mono text-[13px] font-normal uppercase tracking-[0.2em] text-erp">End to end</p>
           <h2
             id="process-heading"
-            className="mt-4 font-display text-3xl font-bold tracking-tight text-ink-950 text-balance sm:text-4xl lg:text-5xl"
+            className="mt-4 font-display text-[clamp(1.75rem,1.2rem+1.8vw,3rem)] font-bold tracking-tight text-ink-950 text-balance"
           >
             One workspace for the entire broker-side process.
           </h2>
@@ -110,7 +110,7 @@ export function BrokerProcessFlowSection() {
           </p>
         </motion.div>
 
-        <ol className="swiss-rail mt-14 m-0 list-none p-0 sm:mt-16">
+        <ol className="swiss-rail mt-8 m-0 list-none p-0 sm:mt-16">
           {stages.map((stage, i) => (
             <motion.li
               key={stage.name}
@@ -120,14 +120,16 @@ export function BrokerProcessFlowSection() {
               transition={{ duration: 0.45, delay: i * 0.08 }}
               className="swiss-col"
             >
-              <p className="swiss-num" aria-hidden>
-                <stage.Icon />
-                {String(i + 1).padStart(2, "0")}
-              </p>
-              <h3 className="mt-6 font-mono text-[13px] font-normal uppercase tracking-[0.16em] text-erp">
-                {stage.name}
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-organ-800">{stage.line}</p>
+              <div className="flex items-center gap-4 lg:block">
+                <p className="swiss-num" aria-hidden>
+                  <stage.Icon />
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 className="m-0 font-mono text-[13px] font-normal uppercase tracking-[0.16em] text-erp lg:mt-6">
+                  {stage.name}
+                </h3>
+              </div>
+              <p className="mt-2 text-[15px] leading-relaxed text-organ-800 lg:mt-3">{stage.line}</p>
             </motion.li>
           ))}
         </ol>

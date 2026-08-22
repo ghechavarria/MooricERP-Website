@@ -34,8 +34,8 @@ export function HeroCopy({
           ) : null}
 
           <h1 id={headingId} className="hero-copy__headline">
-            <span className="hero-copy__headline-line">Intelligent Mortgage Platform,</span>
-            <span className="hero-copy__headline-accent">Empowering Better Closings</span>
+            <span className="hero-copy__headline-line">Intelligent mortgage platform</span>
+            <span className="hero-copy__headline-accent">Empowering better closings</span>
           </h1>
         </>
       ) : null}
@@ -51,16 +51,10 @@ export function HeroCopy({
 
           <div className={mode === "support" ? "hero-copy__cluster" : undefined}>
             {mode === "support" ? (
-              <>
-                <h1 className="hero-copy__headline hero-copy__headline--panel-billboard">
-                  <span className="hero-copy__headline-line">Intelligent Mortgage Platform,</span>
-                  <span className="hero-copy__headline-accent">Empowering Better Closings</span>
-                </h1>
-                <h2 className="hero-copy__headline hero-copy__headline--tag">
-                  <span className="hero-copy__headline-line">Less chasing paperwork</span>
-                  <span className="hero-copy__headline-accent">More time closing loans</span>
-                </h2>
-              </>
+              <h2 className="hero-copy__headline hero-copy__headline--tag">
+                <span className="hero-copy__headline-line">Less chasing paperwork</span>
+                <span className="hero-copy__headline-accent">More time closing loans</span>
+              </h2>
             ) : null}
 
             <p className="hero-copy__body">
