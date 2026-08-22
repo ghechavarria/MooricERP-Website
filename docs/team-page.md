@@ -9,7 +9,7 @@ Wired in [`src/main.tsx`](../src/main.tsx) (`BrowserRouter`) and [`src/App.tsx`]
 | Path | Content |
 |------|---------|
 | `/` | Marketing homepage (no team roster) |
-| `/team` | [`TeamSection`](../src/components/TeamSection.tsx) → footer [`ContactCTA`](../src/components/ContactCTA.tsx) (`#contact`, `page="team"`, `tone="teal"`) |
+| `/team` | [`TeamSection`](../src/components/TeamSection.tsx) → footer [`ContactCTA`](../src/components/ContactCTA.tsx) (`#contact`, `page="team"`, `tone="silver"`) |
 
 Shared shell: Header, Footer, `ContactFormModal`. `ScrollToHash` scrolls to `#problem` / `#features` / `#memory` / `#top` after client navigation.
 

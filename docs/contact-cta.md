@@ -1,12 +1,12 @@
 # Contact CTA (`ContactCTA.tsx`)
 
-Three placements share the contact modal. Blues and wording differ so they don’t read as the same block.
+Three placements share the contact modal. Surfaces and wording differ so they don’t read as the same block.
 
 | Placement | `sectionId` | `headingId` | `tone` | `page` | Surface | Headline |
 |-----------|-------------|-------------|--------|--------|---------|----------|
 | After Problem (homepage) | `#early-access` | `early-access-heading` | `bright` | `home` | ERP blue `#0075FF` | Get early access — first month free. |
 | Above footer (homepage) | `#contact` | `cta-heading` | `deep` | `home` (default) | Navy `#082F7C` | See Mooric ERP on a real file — first month free. |
-| Above footer (`/team`) | `#contact` | `cta-heading` | `teal` | `team` | `#0053b5` | Talk with the team — first month free. |
+| Above footer (`/team`) | `#contact` | `cta-heading` | `silver` | `team` | Accent silver `#bfd3e6` | Talk with the team — first month free. |
 
 Props default to the homepage footer band (`sectionId="contact"`, `headingId="cta-heading"`, `tone="deep"`, `page="home"`).
 
@@ -26,7 +26,7 @@ Props default to the homepage footer band (`sectionId="contact"`, `headingId="ct
 
 - Eyebrow: `The people behind it`
 - Body: questions about Mooric, working with independent LOs, or early access
-- Surface: `#0053b5` (`tone="teal"`), filled white **Get in touch**
+- Surface: `accent` silver `#bfd3e6` (`tone="silver"`), navy type, filled navy **Get in touch** (invert-on-hover to outline)
 
 All three open the contact modal (`walkthrough`). Hidden when `SHOW_CONTACT_ACTIONS` is false.
 

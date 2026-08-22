@@ -52,7 +52,7 @@ function TeamPage() {
   return (
     <>
       <TeamSection />
-      <ContactCTA page="team" tone="teal" />
+      <ContactCTA page="team" tone="silver" />
     </>
   );
 }
