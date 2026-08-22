@@ -20,6 +20,6 @@ Benefit claim in the left column, both lines white, Montserrat 800 uppercase. Sa
 
 ## CTAs
 
-Under 1100px the stack opens up: more space under the pill, between headline and body, above the CTA, and between the copy block and stats. Pane gap and rail padding also scale up on tablet.
+Primary is the only filled button. Hover matches the other marketing CTAs: fill drops out to a white outline, type stays white. It can wrap (`max-width: 100%`) so it stays inside the navy pane. Extra space above the actions (`--hc-space * 1.75`); the ghost link sits close under it (`gap: 0.3rem`) with a trailing `↓`. Under 1100px the stack opens up: more space under the pill, between headline and body, above the CTA, and between the copy block and stats. Pane gap and rail padding also scale up on tablet.
 
 `align` (`left` \| `center`) and `mode` (`full` \| `lead` \| `support`). **lead** is the on-photo title; **support** is the left-column copy. See [hero-layout-variants.md](hero-layout-variants.md).

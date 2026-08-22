@@ -52,11 +52,7 @@ export function ContactCTA({
         <div className={`flex shrink-0 flex-col gap-4${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}>
           <button
             type="button"
-            className={
-              tone === "bright"
-                ? "rounded-md border-2 border-white bg-transparent px-10 py-5 text-base font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-erp sm:px-12 sm:py-5 sm:text-lg"
-                : `rounded-md border-2 border-white bg-white px-10 py-5 text-base font-bold uppercase tracking-wide transition hover:bg-transparent hover:text-white sm:px-12 sm:py-5 sm:text-lg ${tone === "teal" ? "text-[#0053b5]" : "text-[#082F7C]"}`
-            }
+            className={`rounded-md border-2 border-white bg-white px-10 py-5 text-base font-bold uppercase tracking-wide transition hover:bg-transparent hover:text-white sm:px-12 sm:py-5 sm:text-lg ${tone === "teal" ? "text-[#0053b5]" : "text-[#082F7C]"}`}
             onClick={() => openContactModal("walkthrough")}
           >
             {page === "team" ? "Get in touch" : tone === "deep" ? "Request a walkthrough" : "Get early access"}

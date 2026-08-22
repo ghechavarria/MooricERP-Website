@@ -23,7 +23,7 @@ An [organic photo](./organic-photo.md) sits beside the intro and fades into the 
   - **3×** — The same data, re-typed
   - **17** — Emails to clear one condition
   - **5+** — Tools that don't talk
-  - **9 PM** — When you find out something slipped
+  - **9 PM** — When you find out something slipped. **PM** is a `0.5em` unit next to **9** (same visual scale as **×** / **+**) on all breakpoints.
 - **CTA bar:** “None of this is loan officer work…” + **See how ↓** → `#features` (02 · Broker-side process)
 
 ## Surface

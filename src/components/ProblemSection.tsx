@@ -19,7 +19,8 @@ const painPoints = [
     body: "Excel for the pipeline, folders for documents, a calendar for deadlines, notes for borrower context, email for everything else. You are the integration.",
   },
   {
-    stat: "9 PM",
+    stat: "9",
+    unit: "PM",
     title: "When you find out something slipped",
     body: "A CD deadline, an expiring lock, an HOA questionnaire nobody chased — hard dates don't remind themselves, so the anxiety never fully switches off.",
   },
@@ -73,8 +74,13 @@ export function ProblemSection() {
               className="py-4 sm:p-8"
             >
               <div className="flex items-baseline gap-3 sm:block">
-                <p className="shrink-0 font-display text-3xl font-extrabold leading-none text-erp sm:text-5xl">
+                <p className="shrink-0 whitespace-nowrap font-display text-3xl font-extrabold leading-none text-erp sm:text-5xl">
                   {item.stat}
+                  {"unit" in item ? (
+                    <span className="relative -top-[0.22em] ml-px inline-block text-[0.5em] tracking-wide">
+                      {item.unit}
+                    </span>
+                  ) : null}
                 </p>
                 <h3 className="text-base font-bold uppercase tracking-wide text-white sm:mt-4 sm:text-lg">
                   {item.title}

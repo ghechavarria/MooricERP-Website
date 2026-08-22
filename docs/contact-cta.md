@@ -14,7 +14,7 @@ Props default to the homepage footer band (`sectionId="contact"`, `headingId="ct
 
 - Eyebrow: `Let's talk`
 - Body: one workspace for the broker-side process; leave info, personal follow-up
-- Button: outlined white **Get early access**
+- Button: filled white **Get early access** (same invert-on-hover as the footer band)
 
 ## Homepage footer (`deep`)
 

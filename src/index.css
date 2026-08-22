@@ -836,6 +836,13 @@
     white-space: normal;
   }
 
+  .hero-copy__actions .btn-primary-silver:hover {
+    background: transparent;
+    color: #fff;
+    box-shadow: none;
+    @apply ring-2 ring-white;
+  }
+
   .hero-copy__btn--ghost {
     display: inline-flex;
     align-items: center;
