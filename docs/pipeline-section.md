@@ -17,7 +17,7 @@ Speaks to independent LOs and broker shops who manage pipelines across spreadshe
 
 ## Layout
 
-- **Surface:** dark `#0a1626`, fluid top padding after Features; bottom padding is `0` so it meets Memory. Copy and the step grid use `--page-gutter`.
+- **Surface:** dark `#0a1626`. Below **1440px** the section keeps its original top inset so the intro photo does not meet Features. From **1440px** up, section padding-top is `0` so the photo meets Features; copy keeps the inset via `.pipeline-intro-copy`. Bottom padding is `0` so it meets Memory. Copy and the step grid use `--page-gutter`.
 - **Header:** Eyebrow `03 · Closed` (mono, normal weight) + display headline `CLOSED — Pipeline & production` + intro
 - Intro row: copy left, [organic photo](./organic-photo.md) on the right (“Every file, one view”)
 - Three numbered steps in a grid under the intro. Below `sm` the heading and body sit beside the numeral with tighter padding and type; from `sm` up they stack under it in three columns.

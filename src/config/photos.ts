@@ -12,8 +12,8 @@ export const SITE_PHOTOS = {
     objectPosition: "50% 45%",
   },
   pipeline: {
-    src: "/images/photos/vitaly-gariev-Q0EHZjM8gvk-unsplash.jpg",
-    alt: "Smiling professional in glasses working at a laptop in a brick-walled office",
+    src: "/images/photos/premium_photo-1661440102417-fe9ea01d0518.jpg",
+    alt: "Smiling professional in glasses writing at a desk with a laptop in a bright office",
     objectPosition: "50% 28%",
     caption: "Every file, one view",
   },
@@ -27,6 +27,6 @@ export const SITE_PHOTOS = {
     src: "/images/photos/vitaly-gariev-dMiw0B4v6iQ-unsplash.jpg",
     alt: "Professional on a video call at a desk with a notebook, charts, and a laptop",
     objectPosition: "50% 30%",
-    caption: "The file already knows",
+    caption: "The workspace already knows",
   },
 } as const;

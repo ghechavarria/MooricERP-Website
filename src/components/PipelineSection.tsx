@@ -32,7 +32,7 @@ export function PipelineSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="w-full max-w-2xl page-gutter-x lg:max-w-xl lg:pr-10"
+          className="pipeline-intro-copy w-full max-w-2xl page-gutter-x lg:max-w-xl lg:pr-10"
         >
           <p className="font-mono text-[13px] font-normal uppercase tracking-[0.28em] text-erp">03 · Closed</p>
           <h2

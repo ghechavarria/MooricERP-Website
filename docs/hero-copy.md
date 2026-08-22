@@ -16,10 +16,10 @@ On the photo, centered under *Empowering better closings*, all viewports. `inlin
 
 ## Platform line
 
-Benefit claim in the left column, both lines a luminous silver gradient (`#8fb4d4` → white → `#8fb4d4`) with an 8s `shimmer` animation. Same treatment on the stacked layout (centered). Motion is static when `prefers-reduced-motion` is set.
+Benefit claim in the left column, both lines filled with the silver metal photo (`/images/silver-metal.jpg`) via `background-clip: text`. Same treatment on the stacked layout (centered).
 
 ## CTAs
 
-Primary is the only filled button. Hover matches the other marketing CTAs: fill drops out to a white outline, type stays white. On desktop (`min-width: 1100px`) the stack opens up: more space under the headline before the body, between the button and ghost link, and above the stats rule. Extra space above the actions (`--hc-space * 2.15`); the ghost link sits under it (`gap: 0.75rem`) with a trailing `↓`. Under 1100px the stack also opens, with tighter button/ghost pairing (`gap: 0.3rem`).
+Primary is the only filled button. Hover matches the other marketing CTAs: fill drops out to a white outline, type stays white. The ghost link **See why it's different** uses logo ERP blue (`#0075FF`) and sits under the button with a trailing `↓`; hover goes white. Extra space above the actions (`--hc-space * 2.15` from 1100px up; a looser clamp under 1100px).
 
 `align` (`left` \| `center`) and `mode` (`full` \| `lead` \| `support`). **lead** is the on-photo title; **support** is the left-column copy. See [hero-layout-variants.md](hero-layout-variants.md).

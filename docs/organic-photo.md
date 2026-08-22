@@ -27,9 +27,9 @@ Paths and captions are in [`src/config/photos.ts`](../src/config/photos.ts).
 | Problem intro | `vitaly-gariev-sziDbsUZsok-unsplash.jpg` | right | The overhead between deals |
 
 Problem crop: `object-position: right 28%` so the man on the right stays in frame as the photo is covered.
-| Pipeline intro | `vitaly-gariev-Q0EHZjM8gvk-unsplash.jpg` | right | Every file, one view |
-| Memory intro | `vitaly-gariev-dMiw0B4v6iQ-unsplash.jpg` | left | The file already knows |
+| Pipeline intro | `premium_photo-1661440102417-fe9ea01d0518.jpg` | right | Every file, one view |
+| Memory intro | `vitaly-gariev-dMiw0B4v6iQ-unsplash.jpg` | left | The workspace already knows |
 
-`SITE_PHOTOS.features` (`premium_photo-1752380337760-aa62cbe74b15.png`) remains in config and on disk unused. Features is copy-only. `vitaly-gariev-oui8D2QGQcQ-unsplash.jpg` and `vitaly-gariev-272ClcPZ2Qs-unsplash.jpg` also remain unused.
+`SITE_PHOTOS.features` (`premium_photo-1752380337760-aa62cbe74b15.png`) remains in config and on disk unused. Features is copy-only. `vitaly-gariev-Q0EHZjM8gvk-unsplash.jpg`, `vitaly-gariev-oui8D2QGQcQ-unsplash.jpg` and `vitaly-gariev-272ClcPZ2Qs-unsplash.jpg` also remain unused.
 
 Product mock components (`BeforeAfterDemo`, `MooricLoanExamplePanel`, `MooricPipelineExamplePanel`, `ZoomableProductView`) remain in the repo but are not mounted.
