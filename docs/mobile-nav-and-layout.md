@@ -4,7 +4,7 @@
 
 - **Surface:** White bar, `border-b border-organ-200`, no silver gradient or drop shadow — same hairline language as light marketing sections
 - **Brand:** Square logo + **Mooric** / **ERP** wordmark unchanged
-- **Nav:** JetBrains Mono, uppercase, `tracking-[0.16em]`, `text-organ-800`, hover `text-erp`
+- **Nav:** Inter 13.5px medium, `#3d4757`, hover `text-erp`. Desktop: **Explore** dropdown, Pricing, Team, Contact, **Book a demo**.
 - **Breakpoint:** Primary nav and desktop CTAs use **`min-[1440px]`**; the menu control and overlay are **`min-[1440px]:hidden`** below that. Mid-width laptops (1280–1439) use the drawer so the bar does not cram logo + four links + CTA.
 - **Density when desktop nav is visible:**
   - **1440–1799:** compact — nav `px-2 py-1.5 text-[13px]`, tighter gaps, CTA `px-3 py-2 text-[13px]`, slightly smaller wordmark, `ml-6` on the nav cluster
@@ -17,15 +17,15 @@
 - **Drawer chrome:** Top row labels **Menu** and includes an in-drawer **Close** control (header toggle is covered while open).
 - **Keyboard:** **Escape** closes the menu (`keydown` listener while open).
 - **Scroll lock:** `document.body.style.overflow = "hidden"` while the menu is open.
-- **Primary links (desktop + mobile):** **Why switch** (`#problem`), **Process** (`#features`), **Loan Memory** (`#memory`), **The Team** (`#team`). Sales path: pain → broker process (02) → core differentiator → trust. Logo links to `#top`.
-- **Mobile links:** Same anchors as desktop, plus **Get early access** button with **First month free** as small gray text underneath (opens the contact modal).
+- **Primary links (desktop + mobile):** **Explore** (Capabilities, Application & intake, Income & program fit, Conditions & follow-up, Pipeline & hard dates, Central Loan Memory, Personal assistant), **Pricing** (`/#contact`), **Team** (`/team`), **Contact** (`/#contact` on home, `/team#contact` on the team page). Logo links to `#top`.
+- **Explore:** Desktop hover/click panel (`.explore-panel`). Mobile drawer uses an accordion for the same anchors. The panel and drawer close on route or hash change (and on Pricing / Team / Contact click).
+- **Mobile links:** Same anchors as desktop, plus **Book a demo** button with **First month free** as small gray text underneath (opens the contact modal).
 
 ## Site shell
 
-- **`App.tsx`:** Horizontal clipping uses **`overflow-x-hidden` on `<main>` only** (not the outer flex wrapper that contains **`Header`**). Putting `overflow-x-hidden` on that parent breaks **`position: sticky`** for the header in common browser behavior, so the nav would scroll off-screen on mobile.
+- **`App.tsx`:** Horizontal clipping uses **`overflow-x-clip` on `<main>` only** (not the outer flex wrapper that contains **`Header`**). `clip` does not force `overflow-y: auto` the way `hidden` does, so hash scroll and the sticky header stay on the window. Putting overflow clipping on that parent still breaks **`position: sticky`** for the header in common browser behavior, so the nav would scroll off-screen on mobile.
 - **`index.html`:** Viewport includes `viewport-fit=cover` so safe-area env vars apply on notched devices.
 
 ## Section tweaks
 
 - **Hero:** CTA row stacks full-width buttons on small screens.
-- **HeroMotionBand:** Component kept but not mounted. “Mooric ERP” headline scales down on small viewports with tighter letter-spacing to avoid overflow.

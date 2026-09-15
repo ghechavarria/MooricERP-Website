@@ -6,4 +6,4 @@ The UI uses a **cool metallic** look to match the logo tile. In [`tailwind.confi
 
 Primary CTAs and light-section eyebrows use the **`erp`** brand blue (**`#0075FF`**; see [`tailwind.config.js`](../tailwind.config.js) and [button-primary-silver.md](./button-primary-silver.md)).
 
-On **light** sections, prefer **`text-erp`** / **`border-erp`** for eyebrows, dividers, and step badges. Reserve **`accent`** (silver-toned) for **dark** surfaces (hero pulse strip, motion band) where metallic highlights still read clearly.
+On **light** sections, prefer **`text-erp`** / **`border-erp`** for eyebrows, dividers, and step badges. **`accent-light`** is used on the team portrait initials fallback.

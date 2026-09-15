@@ -39,7 +39,8 @@ function TeamMemberCard({
       transition={{ duration: 0.45, delay: index * 0.06 }}
       className="w-[calc(50%-0.75rem)] sm:w-52 md:w-56"
     >
-      <div className="team-portrait neu-pad relative mx-auto aspect-[4/5] max-w-[220px] overflow-hidden">
+      <div className="relative mx-auto aspect-[4/5] max-w-[220px] overflow-hidden rounded-[18px] border border-[#e4ebf4] bg-[#f8fafd]">
+        <span className="absolute inset-x-0 bottom-0 z-[1] h-[5px] bg-erp" aria-hidden />
         {!photoFailed ? (
           <picture>
             <source type="image/webp" srcSet={`/images/team/${slug}.webp`} />
@@ -65,9 +66,11 @@ function TeamMemberCard({
           </div>
         )}
       </div>
-      <div className="neu-pad team-lockup">
-        <h3>{name}</h3>
-        <p>{title}</p>
+      <div className="mx-auto mt-[1.1rem] flex w-full max-w-[220px] flex-col items-center rounded-[0.9rem] border border-[#e4ebf4] bg-[#f8fafd] px-5 py-5 text-center">
+        <h3 className="m-0 font-display text-[1.05rem] font-bold leading-snug tracking-[-0.02em] text-[#0a0e14]">
+          {name}
+        </h3>
+        <p className="mt-[0.35rem] text-xs font-semibold leading-snug text-erp text-balance">{title}</p>
       </div>
     </motion.article>
   );
@@ -75,11 +78,7 @@ function TeamMemberCard({
 
 export function TeamSection() {
   return (
-    <section
-      id="team"
-      className="section-marketing section-neu"
-      aria-labelledby="team-heading"
-    >
+    <section id="team" className="v4-section" aria-labelledby="team-heading">
       <div className="layout-shell">
         <div className="mx-auto w-full max-w-5xl @container/team">
           <motion.div
@@ -90,7 +89,7 @@ export function TeamSection() {
             className="mx-auto w-full text-center"
           >
             <div className="mx-auto max-w-3xl">
-              <p className="inline-flex items-center justify-center gap-2.5 font-mono text-sm font-normal uppercase tracking-[0.22em] text-erp sm:text-base">
+              <p className="v4-kicker inline-flex items-center justify-center gap-2.5">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="shrink-0 sm:h-6 sm:w-6" aria-hidden>
                   <circle cx="8" cy="8" r="2.6" stroke="currentColor" strokeWidth="1.75" />
                   <circle cx="16" cy="8" r="2.6" stroke="currentColor" strokeWidth="1.75" />
@@ -103,11 +102,11 @@ export function TeamSection() {
                 </svg>
                 The people
               </p>
-              <h2 id="team-heading" className="section-heading mt-4">
+              <h2 id="team-heading" className="v4-h2 mx-auto">
                 Our team
               </h2>
             </div>
-            <p className="mx-auto mt-4 w-full text-lg leading-relaxed text-organ-800">
+            <p className="mx-auto mt-4 w-full text-lg leading-relaxed text-[#48566b]">
               Mortgage technology veterans building the platform{" "}
               <br className="hidden @max-[979px]/team:block" />
               independent loan officers actually need.

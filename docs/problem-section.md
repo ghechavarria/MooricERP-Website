@@ -1,39 +1,15 @@
 # Problem section (`ProblemSection.tsx`)
 
-Dark “The problem” slab that sits between the hero and Central Loan Memory. Ported from the standalone Mooric ERP landing page (`#problem`).
+Light “The overhead” band (`#problem`) under the hero.
 
 ## Purpose
 
-One job: name the overhead that eats an independent LO’s day, then point into **Central Loan Memory** as the answer.
-
-## Placement
-
-Wired in [`src/App.tsx`](../src/App.tsx):
-
-`Hero` → **`ProblemSection`** → mid-page `ContactCTA` (`#early-access`) → `Features` → …
-
-An [organic photo](./organic-photo.md) sits beside the intro and fades into the navy. Crop is `object-position: right 28%` so the man on the right edge stays the focus as the frame narrows.
+Name the overhead that eats an independent LO’s day, then send the reader into Capabilities.
 
 ## Content
 
-- **Eyebrow:** `01 · The problem` (mono, `text-erp`)
-- **Headline:** Where does your day actually go? (`.display-heading`, white)
-- **Support:** Overhead between borrowers / guidelines / deals; same file handled five ways in five places
-- **Four metric cards** (silver-gray tabular stats, `text-slate-500`):
-  - **3×** — The same data, re-typed
-  - **17** — Emails to clear one condition
-  - **5+** — Tools that don't talk
-  - **9 PM** — When you find out something slipped. **PM** is a `0.5em` unit next to **9** (same visual scale as **×** / **+**) on all breakpoints.
-- **CTA bar:** “None of this is loan officer work…” + **See how ↓** → `#features` (02 · Broker-side process)
+- **Eyebrow:** The overhead
+- **Headline:** Where Does Your Time Go?
+- Four metric cards: `3×`, `17`, `5+`, `9PM`
 
-## Surface
-
-- Section: `.section-marketing`, `scroll-mt-8`, navy
-- Metric tiles: `.problem-metric-grid` — inner hairlines only. 1 col → 2 col (`sm`) → 4 col (`lg`). Below `sm`, the title sits beside the stat (same pattern as Pipeline steps) with tighter padding. Right-edge borders are omitted on the last cell of each row (`odd` at 2-col, `4n` at 4-col) so a stray outer rule does not appear while resizing.
-- Layout: `.layout-shell`
-- Motion: Framer `whileInView`
-
-## Files
-
-- [`src/components/ProblemSection.tsx`](../src/components/ProblemSection.tsx)
-- [`src/App.tsx`](../src/App.tsx)
+`.v4-cols-4` → two columns under 1100px → one under 720px. No editorial photo.

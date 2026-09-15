@@ -1,27 +1,25 @@
 # Site layout
 
-Single production layout (formerly “Final look”).
+Light v4 homepage (see [v4-homepage.md](./v4-homepage.md)). Header chrome unchanged. Footer is white with the square nav logo — [footer.md](./footer.md).
 
 ## Section order
 
-Hero → Production Glance → Problem (`01`) → Features (`02`) → Pipeline (`03`) → Memory (`04`) → Assistant → End to end (includes LOS) → Blueprint band → Team → Contact
+Hero → Overhead (`#problem`) → Capabilities → Intake → Income → Conditions → Pipeline → Memory → Assistant → Closed → LOS banner → Contact
 
 ## Notes
 
-- Hero uses the product-dense live-workspace placement
-- Marketing sections use bold brand presentation (navy bands, display type)
-- Production Glance sits under the hero’s blue ticker strip
-- Light marketing bands mix neumorphism, glass, neo-brutalism, and Swiss grid
-- Mid-page sections use fluid vertical padding that tracks viewport width; hero copy and contact bands stay on the same `--page-gutter` rail. See [page-spacing.md](./page-spacing.md).
-- Team uses upright rounded portraits (no polaroid tilt)
-- Team is a 4 + 3 centered grid
+- Hero is a light two-column layout with a rounded video card
+- Marketing sections use Inter sentence-case headings, JetBrains Mono kickers, and hairline cards
+- Closed (`#closed`) carries production stats
+- Team uses upright rounded portraits on light cards
+- Team is a 4 + 3 centered wrap
 
 ## Key files
 
 | Path | Role |
 |------|------|
 | [`src/App.tsx`](../src/App.tsx) | Section order |
-| [`src/index.css`](../src/index.css) | Section rhythm + shell |
-| [`src/components/ProductionGlanceSection.tsx`](../src/components/ProductionGlanceSection.tsx) | Production glance band |
-| [`src/components/BrokerProcessFlowSection.tsx`](../src/components/BrokerProcessFlowSection.tsx) | End to end |
+| [`src/index.css`](../src/index.css) | `.v4-*` system + shell |
+| [`src/components/ClosedSection.tsx`](../src/components/ClosedSection.tsx) | Closed / production history |
+| [`src/components/CapabilityRailSection.tsx`](../src/components/CapabilityRailSection.tsx) | Capability jump cards |
 | [`src/components/TeamSection.tsx`](../src/components/TeamSection.tsx) | Team grid |

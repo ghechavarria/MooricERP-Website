@@ -9,9 +9,9 @@ Wired in [`src/main.tsx`](../src/main.tsx) (`BrowserRouter`) and [`src/App.tsx`]
 | Path | Content |
 |------|---------|
 | `/` | Marketing homepage (no team roster) |
-| `/team` | [`TeamSection`](../src/components/TeamSection.tsx) → footer [`ContactCTA`](../src/components/ContactCTA.tsx) (`#contact`, `page="team"`, `tone="silver"`) |
+| `/team` | [`TeamSection`](../src/components/TeamSection.tsx) → footer [`ContactCTA`](../src/components/ContactCTA.tsx) (`#contact`, `page="team"`) |
 
-Shared shell: Header, Footer, `ContactFormModal`. `ScrollToHash` scrolls to `#problem` / `#features` / `#memory` / `#top` after client navigation.
+Shared shell: Header, Footer, `ContactFormModal`. `ScrollToHash` scrolls to homepage hashes after client navigation, or to the top of `/team`.
 
 ## Navigation
 
@@ -20,12 +20,12 @@ Shared shell: Header, Footer, `ContactFormModal`. `ScrollToHash` scrolls to `#pr
 | Label | Target |
 |-------|--------|
 | Logo | `/#top` |
-| Why switch | `/#problem` |
-| Process | `/#features` |
-| Loan Memory | `/#memory` |
-| The Team | `/team` |
+| Explore | homepage section hashes |
+| Pricing | `/#contact` |
+| Team | `/team` |
+| Contact | `/team#contact` while on this page; `/#contact` on home |
 
-Hash links work from the team page because they go through `/` first.
+`ScrollToHash` in [`App.tsx`](../src/App.tsx) scrolls to the Talk with the team band (`#contact`) after that hash change.
 
 ## Deploy
 
@@ -33,6 +33,5 @@ Netlify SPA fallback in [`netlify.toml`](../netlify.toml) rewrites `/*` → `/in
 
 ## Related
 
-- [hero-motion-band.md](./hero-motion-band.md) — blueprint band (kept in repo, not mounted)
 - [team-section.md](./team-section.md) — roster layout and portraits
 - [contact-cta.md](./contact-cta.md) — early-access bands

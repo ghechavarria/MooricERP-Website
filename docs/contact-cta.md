@@ -1,33 +1,12 @@
 # Contact CTA (`ContactCTA.tsx`)
 
-Three placements share the contact modal. Surfaces and wording differ so they don’t read as the same block.
+One rounded blue-gradient band (`#contact`) at the bottom of the homepage and `/team`.
 
-| Placement | `sectionId` | `headingId` | `tone` | `page` | Surface | Headline |
-|-----------|-------------|-------------|--------|--------|---------|----------|
-| After Problem (homepage) | `#early-access` | `early-access-heading` | `bright` | `home` | ERP blue `#0075FF` | Get early access — first month free. |
-| Above footer (homepage) | `#contact` | `cta-heading` | `deep` | `home` (default) | Navy `#082F7C` | See Mooric ERP on a real file — first month free. |
-| Above footer (`/team`) | `#contact` | `cta-heading` | `silver` | `team` | Accent silver `#bfd3e6` | Talk with the team — first month free. |
+| Placement | `sectionId` | `headingId` | `page` | Headline | Button |
+|-----------|-------------|-------------|--------|----------|--------|
+| Homepage footer | `#contact` | `cta-heading` | `home` | See Mooric ERP in Action | Book a demo |
+| `/team` footer | `#contact` | `cta-heading` | `team` | Talk with the team | Get in touch |
 
-Props default to the homepage footer band (`sectionId="contact"`, `headingId="cta-heading"`, `tone="deep"`, `page="home"`).
+Nav **Contact** uses this band: `/#contact` on the homepage, `/team#contact` on `/team`.
 
-## Mid-page (`bright`)
-
-- Eyebrow: `Let's talk`
-- Body: one workspace for the broker-side process; leave info, personal follow-up
-- Button: filled white **Get early access** (same invert-on-hover as the footer band)
-
-## Homepage footer (`deep`)
-
-- Eyebrow: `Your next step`
-- Body: you've seen the stages; one workspace from prospect to closed
-- Button: filled white **Request a walkthrough**
-
-## Team page (`page="team"`)
-
-- Eyebrow: `The people behind it`
-- Body: questions about Mooric, working with independent LOs, or early access
-- Surface: `accent` silver `#bfd3e6` (`tone="silver"`), navy type, filled navy **Get in touch** (invert-on-hover to outline)
-
-All three open the contact modal (`walkthrough`). Hidden when `SHOW_CONTACT_ACTIONS` is false.
-
-Vertical padding is a larger fluid band than `.section-marketing` (`clamp(5rem, 3rem + 5.5vw, 9rem)`). The inner rail is `.layout-shell`. The title uses `.display-heading`. See [page-spacing.md](./page-spacing.md).
+Surface: `.v4-cta-band` (`linear-gradient(135deg, #0075ff, #0a3fae)`). Stacks to one column under 1100px. Buttons open the contact modal. Helper line: *Response within one business day*.

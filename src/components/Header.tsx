@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
 
-const links = [
-  { label: "Why switch", to: "/#problem" },
-  { label: "Process", to: "/#features" },
-  { label: "Loan Memory", to: "/#memory" },
-  { label: "The Team", to: "/team" },
+const exploreLinks = [
+  { label: "Capabilities", to: "/#capabilities" },
+  { label: "Application & intake", to: "/#intake" },
+  { label: "Income & program fit", to: "/#income" },
+  { label: "Conditions & follow-up", to: "/#conditions" },
+  { label: "Pipeline & hard dates", to: "/#pipeline" },
+  { label: "Central Loan Memory", to: "/#memory" },
+  { label: "Personal assistant", to: "/#assistant" },
 ];
+
+function navTopLinks(pathname: string) {
+  return [
+    { label: "Pricing", to: "/#contact" },
+    { label: "Team", to: "/team" },
+    { label: "Contact", to: pathname === "/team" ? "/team#contact" : "/#contact" },
+  ];
+}
 
 function MenuIcon({ open }: { open: boolean }) {
   if (open) {
@@ -38,9 +49,39 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
+function Chevron({ open }: { open?: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="7"
+      viewBox="0 0 12 8"
+      aria-hidden
+      className={`shrink-0 transition-transform${open ? " rotate-180" : ""}`}
+    >
+      <path
+        d="M1 1.5 6 6.5l5-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const [mobileExploreOpen, setMobileExploreOpen] = useState(false);
+  const { pathname, hash } = useLocation();
   const { openContactModal } = useContactModal();
+
+  useEffect(() => {
+    setExploreOpen(false);
+    setMenuOpen(false);
+    setMobileExploreOpen(false);
+  }, [pathname, hash]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -50,18 +91,27 @@ export function Header() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!menuOpen) return undefined;
+    if (!menuOpen && !exploreOpen) return undefined;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setExploreOpen(false);
+        setMobileExploreOpen(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  }, [menuOpen, exploreOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1440px)");
     const onViewport = () => {
-      if (mq.matches) setMenuOpen(false);
+      if (mq.matches) {
+        setMenuOpen(false);
+        setMobileExploreOpen(false);
+      } else {
+        setExploreOpen(false);
+      }
     };
     mq.addEventListener("change", onViewport);
     return () => mq.removeEventListener("change", onViewport);
@@ -99,13 +149,45 @@ export function Header() {
         </Link>
 
         <div className="hidden shrink-0 items-center gap-1.5 min-[1440px]:ml-6 min-[1440px]:flex min-[1800px]:ml-14 min-[1800px]:gap-3">
-          <nav className="flex items-center gap-0.5 min-[1440px]:gap-1 min-[1800px]:gap-1.5" aria-label="Primary">
-            {links.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="rounded-md px-2 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-organ-800 transition hover:text-erp min-[1800px]:px-3 min-[1800px]:py-2 min-[1800px]:text-xs"
+          <nav className="flex items-center gap-5 min-[1800px]:gap-7" aria-label="Primary">
+            <span
+              className="relative flex items-center"
+              onMouseEnter={() => setExploreOpen(true)}
+              onMouseLeave={() => setExploreOpen(false)}
+            >
+              <button
+                type="button"
+                className="nav-link inline-flex items-center gap-1.5 border-0 bg-transparent p-0"
+                aria-expanded={exploreOpen}
+                aria-haspopup="true"
+                onClick={() => {
+                  if (window.matchMedia("(hover: none)").matches) {
+                    setExploreOpen((o) => !o);
+                    return;
+                  }
+                  setExploreOpen(true);
+                }}
               >
+                Explore
+                <Chevron open={exploreOpen} />
+              </button>
+              <span
+                className="explore-panel"
+                style={{
+                  display: exploreOpen ? "flex" : "none",
+                  opacity: exploreOpen ? 1 : 0,
+                  transform: exploreOpen ? "translateY(0)" : "translateY(-6px)",
+                }}
+              >
+                {exploreLinks.map((item) => (
+                  <Link key={item.to} to={item.to} onClick={() => setExploreOpen(false)}>
+                    {item.label}
+                  </Link>
+                ))}
+              </span>
+            </span>
+            {navTopLinks(pathname).map((item) => (
+              <Link key={item.label} to={item.to} className="nav-link" onClick={() => setExploreOpen(false)}>
                 {item.label}
               </Link>
             ))}
@@ -115,7 +197,7 @@ export function Header() {
             className={`btn-primary-silver ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
             onClick={() => openContactModal("briefing")}
           >
-            Get early access
+            Book a demo
           </button>
         </div>
 
@@ -167,11 +249,32 @@ export function Header() {
                 className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-y-contain py-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
                 aria-label="Mobile"
               >
-                {links.map((item) => (
+                <button
+                  type="button"
+                  className="flex items-center justify-between rounded-lg px-3 py-3.5 text-left text-[15px] font-medium text-[#3d4757]"
+                  aria-expanded={mobileExploreOpen}
+                  onClick={() => setMobileExploreOpen((o) => !o)}
+                >
+                  Explore
+                  <Chevron open={mobileExploreOpen} />
+                </button>
+                {mobileExploreOpen
+                  ? exploreLinks.map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ))
+                  : null}
+                {navTopLinks(pathname).map((item) => (
                   <Link
-                    key={item.to}
+                    key={item.label}
                     to={item.to}
-                    className="rounded-lg px-3 py-3.5 font-mono text-sm font-medium uppercase tracking-[0.14em] text-organ-900 active:text-erp"
+                    className="rounded-lg px-3 py-3.5 text-[15px] font-medium text-[#3d4757] active:text-erp"
                     onClick={() => setMenuOpen(false)}
                   >
                     {item.label}
@@ -185,7 +288,7 @@ export function Header() {
                     openContactModal("briefing");
                   }}
                 >
-                  Get early access
+                  Book a demo
                 </button>
                 <p
                   className={`mt-2 text-center text-xs text-organ-600${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}

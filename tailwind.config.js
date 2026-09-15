@@ -10,7 +10,6 @@ export default {
         display: ["Montserrat", "system-ui", "sans-serif"],
         serif: ['"Source Serif 4"', "Georgia", "serif"],
         mono: ["JetBrains Mono", "ui-monospace", "monospace"],
-        hand: ["Caveat", "cursive"],
       },
       colors: {
         ink: {
@@ -46,20 +45,6 @@ export default {
         card: "0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06)",
         "card-md":
           "0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.05)",
-      },
-      animation: {
-        "shimmer-slow": "shimmer 5s ease-in-out infinite",
-        "grid-breathe": "grid-breathe 6s ease-in-out infinite",
-      },
-      keyframes: {
-        shimmer: {
-          "0%": { backgroundPosition: "200% 0" },
-          "100%": { backgroundPosition: "-200% 0" },
-        },
-        "grid-breathe": {
-          "0%, 100%": { opacity: "0.32" },
-          "50%": { opacity: "0.58" },
-        },
       },
     },
   },

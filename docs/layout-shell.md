@@ -6,20 +6,19 @@ Most page sections use `.layout-shell` for shared horizontal padding. The sticky
 
 ## Gutter
 
-`--page-gutter` on `html` scales continuously: `clamp(1rem, 0.4rem + 3.6vw, 6rem)`. Header, hero copy, and body sections use this value so the left rail does not jump when the window is resized. See [page-spacing.md](./page-spacing.md).
+`--page-gutter` on `html` scales continuously: `clamp(1rem, 0.4rem + 3.6vw, 6rem)`. Header, hero, and body sections use this value so the left rail does not jump when the window is resized. See [page-spacing.md](./page-spacing.md).
 
 ## `.layout-shell`
 
 Full-width rail (`max-w-none`) with `padding-inline: var(--page-gutter)`.
 
-Used by Features, Memory, Pipeline (copy + steps), Assistant, Process, Team, Contact CTA, Footer, Production Glance, Problem, and similar sections.
+Used by Hero, Problem, Capabilities, product feature splits, Memory, Pipeline, Assistant, Closed, Team, Contact CTA, Footer, and similar sections.
 
-## `.layout-header` / `.layout-header-px` / `.page-gutter-x`
+## `.layout-header` / `.layout-header-px`
 
 | Class | Behavior |
 | --- | --- |
 | `.layout-header` | `max-w-none` + `--page-gutter` |
-| `.layout-header-px` | Same padding without `mx-auto` — session pulse, etc. |
-| `.page-gutter-x` | Same padding when a wrapper is not a full shell |
+| `.layout-header-px` | Same padding without `mx-auto` |
 
-Applied in [`Header.tsx`](../src/components/Header.tsx), the session pulse bar in [`HeroSessionPulse.tsx`](../src/components/HeroSessionPulse.tsx), and the hero copy wrapper in [`Hero.tsx`](../src/components/Hero.tsx). The hero photo is full-bleed on the right and is not padded.
+Applied in [`Header.tsx`](../src/components/Header.tsx).

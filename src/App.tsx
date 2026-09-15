@@ -3,13 +3,14 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { ContactModalProvider } from "./context/ContactModalContext";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
-import { ProductionGlanceSection } from "./components/ProductionGlanceSection";
 import { ProblemSection } from "./components/ProblemSection";
-import { Features } from "./components/Features";
+import { CapabilityRailSection } from "./components/CapabilityRailSection";
+import { ConditionsSection, IncomeSection, IntakeSection } from "./components/ProductFeatureSections";
 import { PipelineSection } from "./components/PipelineSection";
 import { CentralLoanMemorySection } from "./components/CentralLoanMemorySection";
 import { LOPersonalAssistantSection } from "./components/LOPersonalAssistantSection";
-import { BrokerProcessFlowSection } from "./components/BrokerProcessFlowSection";
+import { ClosedSection } from "./components/ClosedSection";
+import { LosCompatibilityStrip } from "./components/LosCompatibilityStrip";
 import { TeamSection } from "./components/TeamSection";
 import { ContactCTA } from "./components/ContactCTA";
 import { ContactFormModal } from "./components/ContactFormModal";
@@ -35,14 +36,16 @@ function HomePage() {
   return (
     <>
       <Hero />
-      <ProductionGlanceSection />
       <ProblemSection />
-      <ContactCTA sectionId="early-access" headingId="early-access-heading" tone="bright" />
-      <Features />
+      <CapabilityRailSection />
+      <IntakeSection />
+      <IncomeSection />
+      <ConditionsSection />
       <PipelineSection />
       <CentralLoanMemorySection />
       <LOPersonalAssistantSection />
-      <BrokerProcessFlowSection />
+      <ClosedSection />
+      <LosCompatibilityStrip />
       <ContactCTA />
     </>
   );
@@ -52,7 +55,7 @@ function TeamPage() {
   return (
     <>
       <TeamSection />
-      <ContactCTA page="team" tone="silver" />
+      <ContactCTA page="team" />
     </>
   );
 }
@@ -60,10 +63,10 @@ function TeamPage() {
 export default function App() {
   return (
     <ContactModalProvider>
-      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-organ-50">
+      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-white">
         <ScrollToHash />
         <Header />
-        <main className="min-w-0 flex-1 overflow-x-hidden">
+        <main className="min-w-0 flex-1 overflow-x-clip">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/team" element={<TeamPage />} />
