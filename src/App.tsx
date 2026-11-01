@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { ContactModalProvider } from "./context/ContactModalContext";
 import { Header } from "./components/Header";
@@ -15,6 +15,17 @@ import { TeamSection } from "./components/TeamSection";
 import { ContactCTA } from "./components/ContactCTA";
 import { ContactFormModal } from "./components/ContactFormModal";
 import { Footer } from "./components/Footer";
+import { ROUTES, SIGNUP_ENABLED } from "./config/signup";
+
+// Signup pages are only registered, and only fetched, when the switch is on.
+const signupPages = SIGNUP_ENABLED
+  ? [
+      { path: ROUTES.pricing, Page: lazy(() => import("./pages/PricingPage")) },
+      { path: ROUTES.register, Page: lazy(() => import("./pages/RegisterPage")) },
+      { path: ROUTES.account, Page: lazy(() => import("./pages/AccountPage")) },
+      { path: ROUTES.checkoutReturn, Page: lazy(() => import("./pages/CheckoutReturnPage")) },
+    ]
+  : [];
 
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -70,6 +81,17 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/team" element={<TeamPage />} />
+            {signupPages.map(({ path, Page }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <Suspense fallback={null}>
+                    <Page />
+                  </Suspense>
+                }
+              />
+            ))}
           </Routes>
         </main>
         <Footer />

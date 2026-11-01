@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
+import { ERP_URL, ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
 
 const exploreLinks = [
   { label: "Capabilities", to: "/#capabilities" },
@@ -16,7 +17,7 @@ const exploreLinks = [
 
 function navTopLinks(pathname: string) {
   return [
-    { label: "Pricing", to: "/#contact" },
+    { label: "Pricing", to: SIGNUP_NAV_ENABLED ? ROUTES.pricing : "/#contact" },
     { label: "Team", to: "/team" },
     { label: "Contact", to: pathname === "/team" ? "/team#contact" : "/#contact" },
   ];
@@ -192,6 +193,19 @@ export function Header() {
               </Link>
             ))}
           </nav>
+          {SIGNUP_NAV_ENABLED ? (
+            <a href={ERP_URL} className="nav-link ml-3 shrink-0">
+              Sign in
+            </a>
+          ) : null}
+          {SIGNUP_NAV_ENABLED ? (
+            <Link
+              to={ROUTES.register}
+              className="btn-primary-silver shrink-0 px-3 py-2 text-[13px] min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm"
+            >
+              Get started
+            </Link>
+          ) : null}
           <button
             type="button"
             className={`btn-primary-silver ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
@@ -280,6 +294,24 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
+                {SIGNUP_NAV_ENABLED ? (
+                  <a
+                    href={ERP_URL}
+                    className="rounded-lg px-3 py-3.5 text-[15px] font-medium text-[#3d4757] active:text-erp"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign in
+                  </a>
+                ) : null}
+                {SIGNUP_NAV_ENABLED ? (
+                  <Link
+                    to={ROUTES.register}
+                    className="btn-primary-silver mt-3 block w-full px-3 py-3.5 text-center text-base font-semibold"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Get started
+                  </Link>
+                ) : null}
                 <button
                   type="button"
                   className={`btn-primary-silver mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
