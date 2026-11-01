@@ -15,17 +15,19 @@ import { TeamSection } from "./components/TeamSection";
 import { ContactCTA } from "./components/ContactCTA";
 import { ContactFormModal } from "./components/ContactFormModal";
 import { Footer } from "./components/Footer";
-import { ROUTES, SIGNUP_ENABLED } from "./config/signup";
+import { ROUTES } from "./config/signup";
 
-// Signup pages are only registered, and only fetched, when the switch is on.
-const signupPages = SIGNUP_ENABLED
-  ? [
-      { path: ROUTES.pricing, Page: lazy(() => import("./pages/PricingPage")) },
-      { path: ROUTES.register, Page: lazy(() => import("./pages/RegisterPage")) },
-      { path: ROUTES.account, Page: lazy(() => import("./pages/AccountPage")) },
-      { path: ROUTES.checkoutReturn, Page: lazy(() => import("./pages/CheckoutReturnPage")) },
-    ]
-  : [];
+// Signup pages are only registered, and only built into chunks, when the switch is on.
+// The direct comparison lets Vite replace it with a constant and drop the dead imports.
+const signupPages =
+  import.meta.env.VITE_SIGNUP_ENABLED === "true"
+    ? [
+        { path: ROUTES.pricing, Page: lazy(() => import("./pages/PricingPage")) },
+        { path: ROUTES.register, Page: lazy(() => import("./pages/RegisterPage")) },
+        { path: ROUTES.account, Page: lazy(() => import("./pages/AccountPage")) },
+        { path: ROUTES.checkoutReturn, Page: lazy(() => import("./pages/CheckoutReturnPage")) },
+      ]
+    : [];
 
 function ScrollToHash() {
   const { pathname, hash } = useLocation();

@@ -96,6 +96,15 @@ describe("header", () => {
     expect(mobile.querySelector('a[href="/register"]')?.textContent).toBe("Get started");
     expect(mobile.textContent).toContain("Book a demo");
   });
+  it("nav on with no ERP URL omits Sign in but keeps Get started", async () => {
+    const mods = await loadApp({ VITE_SIGNUP_ENABLED: "true", VITE_SIGNUP_NAV_ENABLED: "true" });
+    renderHeader(mods, "/");
+    expect(screen.queryAllByText("Sign in")).toHaveLength(0);
+    expect(screen.getAllByRole("link", { name: "Get started" })).toHaveLength(1);
+    fireEvent.click(screen.getByLabelText("Open menu"));
+    expect(screen.queryAllByText("Sign in")).toHaveLength(0);
+    expect(screen.getAllByRole("link", { name: "Get started" })).toHaveLength(2);
+  });
 });
 
 describe("routes", () => {

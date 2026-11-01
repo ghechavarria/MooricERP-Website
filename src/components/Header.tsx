@@ -193,7 +193,7 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          {SIGNUP_NAV_ENABLED ? (
+          {SIGNUP_NAV_ENABLED && ERP_URL ? (
             <a href={ERP_URL} className="nav-link ml-3 shrink-0">
               Sign in
             </a>
@@ -294,7 +294,7 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                {SIGNUP_NAV_ENABLED ? (
+                {SIGNUP_NAV_ENABLED && ERP_URL ? (
                   <a
                     href={ERP_URL}
                     className="rounded-lg px-3 py-3.5 text-[15px] font-medium text-[#3d4757] active:text-erp"
