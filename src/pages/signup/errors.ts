@@ -20,6 +20,7 @@ const API_MESSAGES: Record<string, string> = {
   rate_limited: "Too many attempts. Please wait a minute and try again.",
   signup_locked:
     "Checkout has already started for this account, so your email and NMLS ID can no longer be changed here. Contact support to change them.",
+  nmls_in_use: "This NMLS ID can't be used for a new account. Check it, or contact support if it is yours.",
   bot_check_failed: "The bot check failed. Please try again.",
   email_not_verified: "Please confirm your email first, then try again.",
   billing_unavailable: "Billing is temporarily unavailable. Please try again shortly.",

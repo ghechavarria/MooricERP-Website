@@ -95,6 +95,11 @@ describe("account states", () => {
       { suspended_reason: "verification", erp_url: null },
       /could not verify/i,
     ],
+    [
+      "suspended with no reason recorded",
+      { org_status: "suspended", suspended_reason: null, erp_url: null },
+      /suspended because of a payment problem/i,
+    ],
     ["canceling", { billing_status: "canceling" }, /cancel(l)?ation is scheduled|set to cancel/i],
     ["canceled", { suspended_reason: "canceled", billing_status: "canceled", erp_url: null }, /subscription (has been )?canceled/i],
   ];

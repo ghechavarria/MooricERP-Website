@@ -78,7 +78,8 @@ export const describeAccount = (status: AccountStatus): AccountView => {
       true,
     );
   }
-  if (reason) {
+  // An old suspension can have no reason recorded; the organization status still counts.
+  if (reason || status.org_status === "suspended") {
     return view(
       "suspended_billing",
       "danger",

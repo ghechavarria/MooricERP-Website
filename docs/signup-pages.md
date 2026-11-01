@@ -1,6 +1,6 @@
 # Signup pages
 
-Pricing, register, account and checkout-return pages. They exist only when `VITE_SIGNUP_ENABLED=true`; with it off they are not routed and not built into the bundle (the flag-off `dist` has only `index-*.css` and `index-*.js`). Header links to them need `VITE_SIGNUP_NAV_ENABLED=true`. While nav is off the pages carry `<meta name="robots" content="noindex">`, added to `document.head` on mount and removed on unmount (`src/pages/signup/useNoindex.ts`).
+Pricing, register, account and checkout-return pages. They exist only when `VITE_SIGNUP_ENABLED=true`; with it off they are not routed and their code is not in the JavaScript bundle (the flag-off `dist` has only `index-*.css` and `index-*.js`). The CSS is the exception: Tailwind scans `src/`, so the flag-off stylesheet carries about 71 unused rules from these pages. They affect nothing on screen. Header links to them need `VITE_SIGNUP_NAV_ENABLED=true`. While nav is off the pages carry `<meta name="robots" content="noindex">`, added to `document.head` on mount and removed on unmount (`src/pages/signup/useNoindex.ts`).
 
 Visual system is the v4 homepage ([v4-homepage.md](v4-homepage.md)): `.layout-shell` rail, `.v4-kicker`, `.v4-h2` heading, `.v4-lead`, `.v4-btn` buttons, `.v4-bullet` list, white cards with the `#e4ebf4` hairline. Mobile rules follow [mobile-nav-and-layout.md](mobile-nav-and-layout.md): single column below 720px, 16px inputs (no iOS zoom), no horizontal scroll (checked at 375px).
 
@@ -23,11 +23,11 @@ Only these pages import `src/lib/firebase.ts` and `src/lib/erpApi.ts`, and all f
 4. Returning person: "I already have an account" signs in (TOTP if enrolled). Then `GET /status` decides: already paid goes to `/account`; `started` shows "Welcome back" with Continue to payment; otherwise the details form without email and password.
 5. `/register?checkout=cancelled` (Stripe's cancel URL) shows a banner and the same resume step.
 
-Error handling: `account_exists` links to ERP sign-in (`VITE_ERP_URL`); `signup_locked`, `rate_limited`, `bot_check_failed`, `email_not_verified`, `billing_unavailable` and the common Firebase codes have friendly copy (`src/pages/signup/errors.ts`). Field errors are tied to inputs with `aria-invalid` and `aria-describedby`, and focus moves to the first invalid field.
+Error handling: `account_exists` links to ERP sign-in (`VITE_ERP_URL`); `signup_locked`, `nmls_in_use`, `rate_limited`, `bot_check_failed`, `email_not_verified`, `billing_unavailable` and the common Firebase codes have friendly copy (`src/pages/signup/errors.ts`). Field errors are tied to inputs with `aria-invalid` and `aria-describedby`, and focus moves to the first invalid field.
 
 ### Bot protection
 
-`Turnstile.tsx` loads `https://challenges.cloudflare.com/turnstile/v0/api.js` only when `/register` renders the widget and `VITE_TURNSTILE_SITE_KEY` is set. A blank key (dev) skips the widget and sends an empty token, which the ERP accepts only in dev. The token is reset after each server attempt because tokens are single-use. If a Content-Security-Policy is added in `netlify.toml`, it must allow `script-src`, `frame-src` and `connect-src` for `https://challenges.cloudflare.com`.
+`Turnstile.tsx` loads `https://challenges.cloudflare.com/turnstile/v0/api.js` only when `/register` renders the widget and `VITE_TURNSTILE_SITE_KEY` is set. A blank key in dev skips the widget and sends an empty token, which the ERP accepts only in dev. A production build with a blank key shows "not available" on `/register`, because the ERP would refuse every signup. The token is reset after each server attempt because tokens are single-use. If a Content-Security-Policy is added in `netlify.toml`, it must allow `script-src`, `frame-src` and `connect-src` for `https://challenges.cloudflare.com`.
 
 ### Account states
 

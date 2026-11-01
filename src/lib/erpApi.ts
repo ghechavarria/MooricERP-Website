@@ -38,6 +38,7 @@ export type AccountStatus = {
   state: string;
   plan: string | null;
   billing_status: string | null;
+  org_status?: string | null;
   verified: boolean;
   suspended_reason: string | null;
   access_cutoff_at: string | null;

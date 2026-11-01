@@ -160,6 +160,45 @@ describe("register form", () => {
     expect(api.checkout).not.toHaveBeenCalled();
   });
 
+  it("production build with no Turnstile key shows not available", async () => {
+    vi.stubEnv("PROD", true);
+    vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "");
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+    expect(screen.queryByLabelText(/^first name/i)).toBeNull();
+    expect(api.config).not.toHaveBeenCalled();
+  });
+
+  it("production build with a Turnstile key shows the form", async () => {
+    vi.stubEnv("PROD", true);
+    vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "site-key");
+    renderPage();
+    expect(await screen.findByLabelText(/^first name/i)).toBeTruthy();
+    document.getElementById("cf-turnstile-script")?.remove();
+  });
+
+  it("dev build with no Turnstile key still shows the form", async () => {
+    vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "");
+    renderPage();
+    expect(await screen.findByLabelText(/^first name/i)).toBeTruthy();
+  });
+
+  it("explains an NMLS ID already in use without naming anyone", async () => {
+    fb.currentSession.mockResolvedValue({ email: "ada@example.test", emailVerified: true });
+    api.checkout.mockRejectedValue(new ErpApiError(409, "nmls_in_use", "server text"));
+    renderPage();
+    await screen.findByLabelText(/^first name/i);
+    type(/^first name/i, "Ada");
+    type(/^last name/i, "Lovelace");
+    type(/nmls id/i, "123456");
+    fireEvent.click(screen.getByLabelText(/i agree/i));
+    fireEvent.click(screen.getByRole("button", { name: /save and continue/i }));
+    const alert = (await screen.findByRole("alert")).textContent ?? "";
+    expect(alert).toMatch(/NMLS ID can't be used/i);
+    expect(alert).toMatch(/contact support/i);
+    expect(alert).not.toContain("server text");
+  });
+
   it("explains a locked signup", async () => {
     api.signup.mockRejectedValue(new ErpApiError(409, "signup_locked", "locked"));
     renderPage();

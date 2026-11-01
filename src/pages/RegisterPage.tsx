@@ -25,7 +25,7 @@ import {
 import { redirectTo } from "./signup/redirect";
 import { SignInForm } from "./signup/SignInForm";
 import { Turnstile } from "./signup/Turnstile";
-import { turnstileSiteKey } from "./signup/turnstileKey";
+import { turnstileReady, turnstileSiteKey } from "./signup/turnstileKey";
 import { useFocusHeading } from "./signup/useFocusHeading";
 import { useNoindex } from "./signup/useNoindex";
 
@@ -62,7 +62,7 @@ export default function RegisterPage() {
   const stepRef = useFocusHeading(phase.kind, TRANSIENT);
 
   const load = useCallback(async () => {
-    if (!firebaseAvailable()) {
+    if (!firebaseAvailable() || !turnstileReady()) {
       setPhase({ kind: "unavailable" });
       return;
     }
