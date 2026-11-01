@@ -51,6 +51,45 @@ describe("erpApi requests", () => {
     expect(init.headers.Authorization).toBe("Bearer tok-123");
   });
 
+  it("checkout forces a token refresh, status does not", async () => {
+    fetchMock.mockResolvedValue(json({ url: "u" }));
+    await erpApi.checkout();
+    expect(tokenMock.getIdToken).toHaveBeenCalledWith(true);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({});
+    tokenMock.getIdToken.mockClear();
+    fetchMock.mockResolvedValue(json(STATUS));
+    await erpApi.status();
+    expect(tokenMock.getIdToken).toHaveBeenCalledWith(false);
+  });
+
+  it("portal sends an empty JSON object", async () => {
+    fetchMock.mockResolvedValue(json({ url: "u" }));
+    await erpApi.portal();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({});
+  });
+
+  it("a 401 retries once with a fresh token", async () => {
+    tokenMock.getIdToken.mockImplementation(async (force?: boolean) => (force ? "fresh" : "stale"));
+    fetchMock
+      .mockResolvedValueOnce(json({ detail: "Not authenticated" }, 401))
+      .mockResolvedValueOnce(json(STATUS));
+    await expect(erpApi.status()).resolves.toEqual(STATUS);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer stale");
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe("Bearer fresh");
+  });
+
+  it("a second 401 throws", async () => {
+    fetchMock.mockImplementation(async () => json({ detail: "Not authenticated" }, 401));
+    await expect(erpApi.status()).rejects.toMatchObject({ status: 401 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("a 2xx non-JSON body becomes an ErpApiError", async () => {
+    fetchMock.mockResolvedValue(new Response("<html>ok</html>", { status: 200 }));
+    await expect(erpApi.status()).rejects.toMatchObject({ code: "invalid_response" });
+  });
+
   it("signup posts the body as JSON", async () => {
     fetchMock.mockResolvedValue(json({ state: "started", plan: "launch" }));
     const body = {

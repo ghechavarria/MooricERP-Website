@@ -88,39 +88,54 @@ const errorFrom = async (res: Response): Promise<ErpApiError> => {
 const request = async <T>(
   method: "GET" | "POST",
   path: string,
-  options: { auth: boolean; body?: unknown },
+  options: { auth: boolean; body?: unknown; forceRefresh?: boolean },
 ): Promise<T> => {
   const base = ERP_API_URL.trim().replace(/\/+$/, "");
   if (!base) throw notAvailable();
-  const headers: Record<string, string> = { Accept: "application/json" };
-  if (options.auth) {
-    const token = await getIdToken();
-    if (!token) throw new ErpApiError(401, "not_signed_in", "Please sign in first.");
-    headers.Authorization = `Bearer ${token}`;
-  }
-  if (options.body !== undefined) headers["Content-Type"] = "application/json";
+  const send = async (token: string | null): Promise<Response> => {
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (options.body !== undefined) headers["Content-Type"] = "application/json";
+    try {
+      return await fetch(`${base}/api/account${path}`, {
+        method,
+        headers,
+        credentials: "omit",
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      });
+    } catch {
+      throw new ErpApiError(0, "network_error", "Could not reach the server. Check your connection.");
+    }
+  };
   let res: Response;
-  try {
-    res = await fetch(`${base}/api/account${path}`, {
-      method,
-      headers,
-      credentials: "omit",
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
-    });
-  } catch {
-    throw new ErpApiError(0, "network_error", "Could not reach the server. Check your connection.");
+  if (options.auth) {
+    const token = await getIdToken(options.forceRefresh === true);
+    if (!token) throw new ErpApiError(401, "not_signed_in", "Please sign in first.");
+    res = await send(token);
+    if (res.status === 401) {
+      // the cached token may have expired or be stale: refresh once and retry
+      const fresh = await getIdToken(true);
+      if (!fresh) throw new ErpApiError(401, "not_signed_in", "Please sign in first.");
+      res = await send(fresh);
+    }
+  } else {
+    res = await send(null);
   }
   if (!res.ok) throw await errorFrom(res);
-  return (await res.json()) as T;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new ErpApiError(res.status, "invalid_response", "The server sent an unexpected response.");
+  }
 };
 
 export const erpApi = {
   config: () => request<AccountConfig>("GET", "/config", { auth: false }),
   signup: (body: SignupRequest) =>
     request<SignupResponse>("POST", "/signup", { auth: true, body }),
-  checkout: () => request<UrlResponse>("POST", "/checkout", { auth: true }),
+  checkout: () => request<UrlResponse>("POST", "/checkout", { auth: true, body: {}, forceRefresh: true }),
   status: () => request<AccountStatus>("GET", "/status", { auth: true }),
-  portal: () => request<UrlResponse>("POST", "/portal", { auth: true }),
+  portal: () => request<UrlResponse>("POST", "/portal", { auth: true, body: {} }),
 };
 
 // ---------------------------------------------------------------------------

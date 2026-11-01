@@ -17,6 +17,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   type Auth,
+  type MultiFactorError,
   type MultiFactorResolver,
   type User,
 } from "firebase/auth";
@@ -71,7 +72,7 @@ export const signIn = async (email: string, password: string): Promise<SignInRes
     return { status: "signed_in", user: cred.user };
   } catch (error) {
     if ((error as { code?: string }).code === "auth/multi-factor-auth-required") {
-      return { status: "mfa_required", resolver: getMultiFactorResolver(auth, error as never) };
+      return { status: "mfa_required", resolver: getMultiFactorResolver(auth, error as MultiFactorError) };
     }
     throw error;
   }
@@ -102,4 +103,16 @@ export const getIdToken = async (forceRefresh = false): Promise<string | null> =
 
 export const signOut = async (): Promise<void> => {
   await firebaseSignOut(getAuthInstance());
+};
+
+/**
+ * Re-reads the user and forces a new ID token so a just-clicked verification link
+ * shows up in the token's email_verified claim. Returns user.emailVerified.
+ */
+export const refreshVerification = async (): Promise<boolean> => {
+  const user = getAuthInstance().currentUser;
+  if (!user) throw new Error("You need to be signed in first.");
+  await user.reload();
+  await user.getIdToken(true);
+  return user.emailVerified;
 };

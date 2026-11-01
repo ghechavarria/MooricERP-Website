@@ -205,4 +205,25 @@ describe("account actions", () => {
     await fb.getIdToken(true);
     expect(getIdToken).toHaveBeenLastCalledWith(true);
   });
+
+  it("refreshVerification reloads, refreshes the token and returns emailVerified", async () => {
+    configure();
+    const order: string[] = [];
+    const user = {
+      emailVerified: true,
+      reload: vi.fn(async () => void order.push("reload")),
+      getIdToken: vi.fn(async () => void order.push("token")),
+    };
+    m.getAuth.mockReturnValue({ currentUser: user });
+    const fb = await load();
+    await expect(fb.refreshVerification()).resolves.toBe(true);
+    expect(order).toEqual(["reload", "token"]);
+    expect(user.getIdToken).toHaveBeenCalledWith(true);
+  });
+
+  it("refreshVerification needs a signed-in user", async () => {
+    configure();
+    const fb = await load();
+    await expect(fb.refreshVerification()).rejects.toThrow(/signed in/i);
+  });
 });
