@@ -29,6 +29,8 @@ export type AccountConfig = {
   };
   terms_url: string;
   privacy_url: string;
+  /** Current Terms version; sent back when signing up. Blank when the ERP has none set. */
+  terms_version: string;
 };
 
 /** GET /status. "none" means no signup or ERP user yet. */

@@ -1,0 +1,307 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+
+const api = vi.hoisted(() => ({ config: vi.fn(), signup: vi.fn(), checkout: vi.fn(), status: vi.fn() }));
+const fb = vi.hoisted(() => ({
+  firebaseAvailable: vi.fn(() => true),
+  currentSession: vi.fn(),
+  registerUser: vi.fn(),
+  signIn: vi.fn(),
+  completeTotp: vi.fn(),
+  sendVerification: vi.fn(),
+  refreshVerification: vi.fn(),
+  signOut: vi.fn(),
+}));
+const nav = vi.hoisted(() => ({ redirectTo: vi.fn() }));
+
+vi.mock("../lib/erpApi", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../lib/erpApi")>()),
+  erpApi: api,
+}));
+vi.mock("../lib/firebase", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../lib/firebase")>()),
+  ...fb,
+}));
+vi.mock("./signup/redirect", () => nav);
+vi.mock("../config/signup", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../config/signup")>()),
+  ERP_URL: "https://erp.example.test",
+}));
+
+import { ErpApiError } from "../lib/erpApi";
+import RegisterPage from "./RegisterPage";
+
+const config = {
+  signup_available: true,
+  plan: { code: "launch", name: "Launch", price_cents: 5000, included_loans: 10, overage_cents: 1500 },
+  terms_url: "https://t.example.test",
+  privacy_url: "https://p.example.test",
+  terms_version: "2026-11",
+};
+
+const renderPage = (path = "/register") =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <RegisterPage />
+    </MemoryRouter>,
+  );
+
+const type = (label: RegExp | string, value: string) =>
+  fireEvent.change(screen.getByLabelText(label), { target: { value } });
+
+const fillForm = async (over: { nmls?: string; terms?: boolean } = {}) => {
+  await screen.findByLabelText(/^first name/i);
+  type(/^first name/i, "Ada");
+  type(/^last name/i, "Lovelace");
+  type(/^email/i, "ada@example.test");
+  type(/^password/i, "correct-horse-1");
+  type(/nmls id/i, over.nmls ?? "123456");
+  if (over.terms !== false) fireEvent.click(screen.getByLabelText(/i agree/i));
+};
+
+const submit = () => fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  fb.firebaseAvailable.mockReturnValue(true);
+  fb.currentSession.mockResolvedValue(null);
+  fb.registerUser.mockResolvedValue({});
+  fb.sendVerification.mockResolvedValue(undefined);
+  api.config.mockResolvedValue(config);
+  api.signup.mockResolvedValue({ state: "started", plan: "launch" });
+  api.checkout.mockResolvedValue({ url: "https://checkout.example.test/s/1" });
+  api.status.mockResolvedValue({ state: "none" });
+});
+
+afterEach(() => vi.unstubAllEnvs());
+
+describe("register form", () => {
+  it("register requires NMLS digits and terms", async () => {
+    renderPage();
+    await fillForm({ nmls: "12ab", terms: false });
+    submit();
+    expect(await screen.findByText(/nmls id must be 1 to 12 digits/i)).toBeTruthy();
+    expect(screen.getByText(/agree to the terms/i)).toBeTruthy();
+    expect(fb.registerUser).not.toHaveBeenCalled();
+    expect(api.signup).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/nmls id/i).getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("rejects an NMLS ID longer than 12 digits and accepts 12", async () => {
+    renderPage();
+    await fillForm({ nmls: "1234567890123" });
+    submit();
+    expect(await screen.findByText(/nmls id must be 1 to 12 digits/i)).toBeTruthy();
+    type(/nmls id/i, "123456789012");
+    submit();
+    await waitFor(() => expect(api.signup).toHaveBeenCalled());
+  });
+
+  it("links Terms and Privacy from the plan config", async () => {
+    renderPage();
+    await screen.findByLabelText(/^first name/i);
+    expect(screen.getByRole("link", { name: /terms of service/i }).getAttribute("href")).toBe("https://t.example.test");
+    expect(screen.getByRole("link", { name: /privacy policy/i }).getAttribute("href")).toBe("https://p.example.test");
+  });
+
+  it("creates the account, saves signup with the config terms version, and sends verification", async () => {
+    renderPage();
+    await fillForm();
+    submit();
+    expect(await screen.findByRole("heading", { name: /check your email/i })).toBeTruthy();
+    expect(fb.registerUser).toHaveBeenCalledWith("ada@example.test", "correct-horse-1");
+    expect(api.signup).toHaveBeenCalledWith({
+      first_name: "Ada",
+      last_name: "Lovelace",
+      nmls_id: "123456",
+      terms_version: "2026-11",
+      turnstile_token: "",
+    });
+    expect(fb.sendVerification).toHaveBeenCalledTimes(1);
+  });
+
+  it("register blocks checkout until email verified", async () => {
+    fb.refreshVerification.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    renderPage();
+    await fillForm();
+    submit();
+    await screen.findByRole("heading", { name: /check your email/i });
+    expect(api.checkout).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /verified/i }));
+    expect(await screen.findByText(/not verified yet/i)).toBeTruthy();
+    expect(api.checkout).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /verified/i }));
+    await waitFor(() => expect(nav.redirectTo).toHaveBeenCalledWith("https://checkout.example.test/s/1"));
+    expect(api.checkout).toHaveBeenCalledTimes(1);
+  });
+
+  it("resends the verification email", async () => {
+    renderPage();
+    await fillForm();
+    submit();
+    await screen.findByRole("heading", { name: /check your email/i });
+    fireEvent.click(screen.getByRole("button", { name: /resend/i }));
+    await waitFor(() => expect(fb.sendVerification).toHaveBeenCalledTimes(2));
+  });
+
+  it("sends people with an ERP account to ERP sign-in", async () => {
+    api.signup.mockRejectedValue(new ErpApiError(409, "account_exists", "exists"));
+    renderPage();
+    await fillForm();
+    submit();
+    const link = await screen.findByRole("link", { name: /sign in to mooric erp/i });
+    expect(link.getAttribute("href")).toBe("https://erp.example.test");
+    expect(api.checkout).not.toHaveBeenCalled();
+  });
+
+  it("explains a locked signup", async () => {
+    api.signup.mockRejectedValue(new ErpApiError(409, "signup_locked", "locked"));
+    renderPage();
+    await fillForm();
+    submit();
+    expect((await screen.findByRole("alert")).textContent).toMatch(/can no longer be changed|contact support/i);
+  });
+
+  it("shows friendly copy when rate limited", async () => {
+    api.signup.mockRejectedValue(new ErpApiError(429, "rate_limited", "Too many requests"));
+    renderPage();
+    await fillForm();
+    submit();
+    expect((await screen.findByRole("alert")).textContent).toMatch(/too many attempts/i);
+  });
+
+  it("maps an existing Firebase email to a sign-in prompt", async () => {
+    fb.registerUser.mockRejectedValue({ code: "auth/email-already-in-use" });
+    renderPage();
+    await fillForm();
+    submit();
+    expect((await screen.findByRole("alert")).textContent).toMatch(/already exists/i);
+    expect(api.signup).not.toHaveBeenCalled();
+  });
+
+  it("a returning user can sign in, pass the authenticator check, and continue", async () => {
+    fb.signIn.mockResolvedValue({ status: "mfa_required", resolver: {} });
+    fb.completeTotp.mockResolvedValue({ status: "signed_in", user: {} });
+    fb.currentSession
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ email: "ada@example.test", emailVerified: true });
+    renderPage();
+    await screen.findByLabelText(/^first name/i);
+    fireEvent.click(screen.getByRole("button", { name: /already have an account/i }));
+    type(/^email/i, "ada@example.test");
+    type(/^password/i, "pw-pw-pw-pw");
+    fireEvent.click(screen.getByRole("button", { name: /^sign in$/i }));
+    fireEvent.change(await screen.findByLabelText(/authenticator code/i), { target: { value: "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify code/i }));
+    // signed in with no signup yet: the details form without email and password
+    expect(await screen.findByLabelText(/nmls id/i)).toBeTruthy();
+    expect(screen.queryByLabelText(/^password/i)).toBeNull();
+    expect(fb.completeTotp).toHaveBeenCalledWith({}, "123456");
+  });
+
+  it("a verified signed-in user with saved details can resume checkout after cancelling", async () => {
+    fb.currentSession.mockResolvedValue({ email: "ada@example.test", emailVerified: true });
+    api.status.mockResolvedValue({ state: "started" });
+    renderPage("/register?checkout=cancelled");
+    expect(await screen.findByText(/checkout was cancelled/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /continue to payment/i }));
+    await waitFor(() => expect(nav.redirectTo).toHaveBeenCalledWith("https://checkout.example.test/s/1"));
+  });
+
+  it("someone who already paid is pointed to their account", async () => {
+    fb.currentSession.mockResolvedValue({ email: "ada@example.test", emailVerified: true });
+    api.status.mockResolvedValue({ state: "ready" });
+    renderPage();
+    expect((await screen.findByRole("link", { name: /go to your account/i })).getAttribute("href")).toBe("/account");
+  });
+
+  it("stays on the verify step when checkout says the email is not verified", async () => {
+    fb.refreshVerification.mockResolvedValue(true);
+    api.checkout.mockRejectedValue(new ErpApiError(403, "email_not_verified", "Verify"));
+    renderPage();
+    await fillForm();
+    submit();
+    await screen.findByRole("heading", { name: /check your email/i });
+    fireEvent.click(screen.getByRole("button", { name: /verified/i }));
+    expect((await screen.findByRole("alert")).textContent).toMatch(/confirm your email/i);
+    expect(nav.redirectTo).not.toHaveBeenCalled();
+  });
+});
+
+describe("register availability", () => {
+  it("not available when Firebase is not configured", async () => {
+    fb.firebaseAvailable.mockReturnValue(false);
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+    expect(screen.queryByLabelText(/nmls id/i)).toBeNull();
+  });
+
+  it("not available when the API says not_available", async () => {
+    api.config.mockRejectedValue(new ErpApiError(503, "not_available", "no"));
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+  });
+
+  it("not available when the plan data has no terms version", async () => {
+    api.config.mockResolvedValue({ ...config, terms_version: "" });
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+  });
+});
+
+describe("bot protection", () => {
+  type TurnstileStub = { render: ReturnType<typeof vi.fn>; reset: ReturnType<typeof vi.fn>; remove: ReturnType<typeof vi.fn> };
+  const w = window as unknown as { turnstile?: TurnstileStub };
+  const scripts = () => document.head.querySelectorAll('script[src*="challenges.cloudflare.com/turnstile"]');
+  afterEach(() => {
+    scripts().forEach((s) => s.remove());
+    delete w.turnstile;
+  });
+
+  it("blank site key skips the widget and sends an empty token", async () => {
+    vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "");
+    renderPage();
+    await fillForm();
+    expect(scripts()).toHaveLength(0);
+    submit();
+    await waitFor(() => expect(api.signup).toHaveBeenCalled());
+  });
+
+  it("adds the Cloudflare script once when a site key is set and none is loaded", async () => {
+    vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "site-key");
+    const { unmount } = renderPage();
+    await screen.findByLabelText(/^first name/i);
+    await waitFor(() => expect(scripts()).toHaveLength(1));
+    unmount();
+    renderPage();
+    await screen.findByLabelText(/^first name/i);
+    expect(scripts()).toHaveLength(1);
+  });
+
+  it("loads Turnstile only when a site key is set and sends its token", async () => {
+    vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "site-key");
+    let callback: (t: string) => void = () => {};
+    w.turnstile = {
+      render: vi.fn((_el: unknown, opts: { callback: (t: string) => void }) => {
+        callback = opts.callback;
+        return "w1";
+      }),
+      reset: vi.fn(),
+      remove: vi.fn(),
+    };
+    renderPage();
+    await fillForm();
+    await waitFor(() => expect(w.turnstile!.render).toHaveBeenCalled());
+    submit();
+    expect(await screen.findByText(/bot check/i)).toBeTruthy();
+    expect(api.signup).not.toHaveBeenCalled();
+    act(() => callback("tok-123"));
+    submit();
+    await waitFor(() =>
+      expect(api.signup).toHaveBeenCalledWith(expect.objectContaining({ turnstile_token: "tok-123" })),
+    );
+  });
+});

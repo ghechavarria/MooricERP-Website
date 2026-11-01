@@ -116,3 +116,14 @@ export const refreshVerification = async (): Promise<boolean> => {
   await user.getIdToken(true);
   return user.emailVerified;
 };
+
+/**
+ * The signed-in user, once Firebase has finished restoring any saved session.
+ * Null when nobody is signed in.
+ */
+export const currentSession = async (): Promise<{ email: string | null; emailVerified: boolean } | null> => {
+  const auth = getAuthInstance();
+  await auth.authStateReady();
+  const user = auth.currentUser;
+  return user ? { email: user.email, emailVerified: user.emailVerified } : null;
+};

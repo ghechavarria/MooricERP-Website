@@ -4,7 +4,7 @@ const m = vi.hoisted(() => ({
   initializeApp: vi.fn(() => ({ name: "app" })),
   getApps: vi.fn(() => [] as unknown[]),
   getApp: vi.fn(),
-  getAuth: vi.fn(() => ({ currentUser: null as unknown })),
+  getAuth: vi.fn((): Record<string, unknown> => ({ currentUser: null })),
   connectAuthEmulator: vi.fn(),
   createUserWithEmailAndPassword: vi.fn(),
   signInWithEmailAndPassword: vi.fn(),
@@ -225,5 +225,26 @@ describe("account actions", () => {
     configure();
     const fb = await load();
     await expect(fb.refreshVerification()).rejects.toThrow(/signed in/i);
+  });
+});
+
+describe("currentSession", () => {
+  it("waits for Firebase to restore the user, then reports them", async () => {
+    configure();
+    const ready = vi.fn().mockResolvedValue(undefined);
+    m.getAuth.mockReturnValue({
+      authStateReady: ready,
+      currentUser: { email: "a@b.co", emailVerified: true },
+    });
+    const fb = await load();
+    await expect(fb.currentSession()).resolves.toEqual({ email: "a@b.co", emailVerified: true });
+    expect(ready).toHaveBeenCalled();
+  });
+
+  it("is null when nobody is signed in", async () => {
+    configure();
+    m.getAuth.mockReturnValue({ authStateReady: vi.fn().mockResolvedValue(undefined), currentUser: null });
+    const fb = await load();
+    await expect(fb.currentSession()).resolves.toBeNull();
   });
 });

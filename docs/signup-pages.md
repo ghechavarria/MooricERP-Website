@@ -1,0 +1,66 @@
+# Signup pages
+
+Pricing, register, account and checkout-return pages. They exist only when `VITE_SIGNUP_ENABLED=true`; with it off they are not routed and not built into the bundle (the flag-off `dist` has only `index-*.css` and `index-*.js`). Header links to them need `VITE_SIGNUP_NAV_ENABLED=true`. While nav is off the pages carry `<meta name="robots" content="noindex">`, added to `document.head` on mount and removed on unmount (`src/pages/signup/useNoindex.ts`).
+
+Visual system is the v4 homepage ([v4-homepage.md](v4-homepage.md)): `.layout-shell` rail, `.v4-kicker`, `.v4-h2` heading, `.v4-lead`, `.v4-btn` buttons, `.v4-bullet` list, white cards with the `#e4ebf4` hairline. Mobile rules follow [mobile-nav-and-layout.md](mobile-nav-and-layout.md): single column below 720px, 16px inputs (no iOS zoom), no horizontal scroll (checked at 375px).
+
+Only these pages import `src/lib/firebase.ts` and `src/lib/erpApi.ts`, and all four are lazy chunks (see `App.tsx`).
+
+## Pages
+
+| Route | File | What it does |
+|-------|------|--------------|
+| `/pricing` | `PricingPage.tsx` | `GET /config`. Shows the plan name, price from `price_cents` as "$X per month + applicable tax", included loans, and the overage per loan. Nothing is hardcoded; the amount is formatted from plan data. |
+| `/register` | `RegisterPage.tsx` | First and last name, email, password, NMLS ID (digits, 1 to 12), Terms and Privacy checkbox (links from `/config`), Turnstile. |
+| `/account` | `AccountPage.tsx` | Sign-in (with authenticator-app challenge) then status. |
+| `/account?checkout=success` | `CheckoutReturnPage.tsx` | Post-payment page. Also routed at `/checkout/return`. |
+
+### Register flow
+
+1. Load `/config` and any saved Firebase session. Not available if Firebase is not configured, the API says `not_available` or `signup_available` is false, or `/config` has no `terms_version`.
+2. New person: create the Firebase account, `POST /signup` (with `terms_version` from `/config` and the Turnstile token), send the verification email, show "Check your email".
+3. "I've verified my email" calls `refreshVerification()`; only when true does it call `POST /checkout` and redirect to Stripe. "Resend email" sends another.
+4. Returning person: "I already have an account" signs in (TOTP if enrolled). Then `GET /status` decides: already paid goes to `/account`; `started` shows "Welcome back" with Continue to payment; otherwise the details form without email and password.
+5. `/register?checkout=cancelled` (Stripe's cancel URL) shows a banner and the same resume step.
+
+Error handling: `account_exists` links to ERP sign-in (`VITE_ERP_URL`); `signup_locked`, `rate_limited`, `bot_check_failed`, `email_not_verified`, `billing_unavailable` and the common Firebase codes have friendly copy (`src/pages/signup/errors.ts`). Field errors are tied to inputs with `aria-invalid` and `aria-describedby`, and focus moves to the first invalid field.
+
+### Bot protection
+
+`Turnstile.tsx` loads `https://challenges.cloudflare.com/turnstile/v0/api.js` only when `/register` renders the widget and `VITE_TURNSTILE_SITE_KEY` is set. A blank key (dev) skips the widget and sends an empty token, which the ERP accepts only in dev. The token is reset after each server attempt because tokens are single-use. If a Content-Security-Policy is added in `netlify.toml`, it must allow `script-src`, `frame-src` and `connect-src` for `https://challenges.cloudflare.com`.
+
+### Account states
+
+`describeAccount` (`src/pages/signup/accountState.ts`) maps `/status` to what the person sees. Suspension and billing flags win over the signup state.
+
+| Status | Shown |
+|--------|-------|
+| `none` | No subscription yet, Get started |
+| `started` | Payment hasn't been completed, Continue to payment |
+| `paid` | Payment received, creating your account (polls) |
+| `provisioned`, `claims_set`, `email_sending` | Setting up your account (polls) |
+| `ready` | Your account is ready, ERP sign-in link if `erp_url` is set |
+| `review` | Payment received, account under review |
+| `billing_status = past_due` | Last payment failed, with the cutoff date from `access_cutoff_at` |
+| `suspended_reason = billing` | Suspended because of a payment problem, Update payment method |
+| `suspended_reason = verification` | Suspended, business details could not be verified, contact support |
+| `billing_status = canceling` | Cancellation is scheduled, access unchanged |
+| `canceled` | Subscription has been canceled, data kept |
+
+The ERP sign-in link is built only from `status.erp_url`. The Manage billing / Update payment method button opens the Stripe Customer Portal and is shown for every state after payment, including suspended and canceled, so a suspended customer can always pay. The support email comes from `status.support_email`.
+
+### Polling
+
+`useAccountStatus` uses `pollStatus` (5 second base, backoff on errors, stops on fatal errors). It polls only while the state is transitional: `paid`, `provisioned`, `claims_set`, `email_sending`. On the checkout-return page `started` and `none` also count, because the webhook can be a few seconds behind the redirect. Polling stops on its own once the state settles, on sign-out, and on unmount.
+
+### Checkout return
+
+The success URL proves nothing. The page says "Confirming your payment" until `/status` shows a paid state, never shows the ERP link before the server says `ready`, and never says access is granted from the URL alone.
+
+## Environment
+
+See `.env.example`: `VITE_SIGNUP_ENABLED`, `VITE_SIGNUP_NAV_ENABLED`, `VITE_ERP_URL`, `VITE_ERP_API_URL`, `VITE_FIREBASE_*`, `VITE_TURNSTILE_SITE_KEY`.
+
+## Tests
+
+`src/pages/*.test.tsx` mock `src/lib/erpApi` and `src/lib/firebase` at the module boundary (and `src/pages/signup/redirect`). Run `npx vitest run`.
