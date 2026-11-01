@@ -8,7 +8,10 @@ const fixtures = import.meta.glob<string>("./fixtures/*.html", {
   import: "default",
   eager: true,
 });
-const fixture = (name: string) => fixtures[`./fixtures/${name}`];
+// Normalise line endings so git autocrlf cannot break the comparison.
+const fixture = (name: string) => fixtures[`./fixtures/${name}`].replace(/
+/g, "
+");
 
 const loadApp = async (env: Record<string, string>) => {
   vi.resetModules();
