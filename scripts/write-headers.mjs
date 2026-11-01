@@ -34,7 +34,8 @@ export const authDomainOrigin = (raw) => {
   return httpsOrigin(value.includes("://") ? value : `https://${value}`);
 };
 
-export const signupEnabled = (env) => String(env.VITE_SIGNUP_ENABLED ?? "").trim() === "true";
+// The exact string only, the same rule as readSignupConfig in src/config/signup.ts.
+export const signupEnabled = (env) => env.VITE_SIGNUP_ENABLED === "true";
 
 const unique = (items) => [...new Set(items.filter(Boolean))];
 

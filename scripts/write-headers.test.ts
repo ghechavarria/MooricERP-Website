@@ -25,6 +25,12 @@ describe("write-headers CSP", () => {
     expect(csp).toContain("frame-ancestors 'none'");
   });
 
+  it("is on only for the literal string true, the same rule as the app", () => {
+    for (const value of [" true", "true ", "TRUE", "1", undefined]) {
+      expect(buildCsp({ ...on, VITE_SIGNUP_ENABLED: value })).not.toContain("api.example.test");
+    }
+  });
+
   it("flag on: adds ERP API, Firebase and Turnstile", () => {
     const csp = buildCsp(on);
     const connect = directive(csp, "connect-src");
