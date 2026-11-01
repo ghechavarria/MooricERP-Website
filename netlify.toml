@@ -9,3 +9,14 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Static security headers. The Content-Security-Policy-Report-Only header depends
+# on environment values, so scripts/write-headers.mjs generates it into
+# dist/_headers at build time (see docs/netlify-toml.md).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
