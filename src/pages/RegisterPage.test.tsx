@@ -23,7 +23,10 @@ vi.mock("../lib/firebase", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../lib/firebase")>()),
   ...fb,
 }));
-vi.mock("./signup/redirect", () => nav);
+vi.mock("./signup/redirect", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./signup/redirect")>()),
+  ...nav,
+}));
 vi.mock("../config/signup", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../config/signup")>()),
   ERP_URL: "https://erp.example.test",
@@ -231,6 +234,27 @@ describe("register form", () => {
   });
 });
 
+describe("register robustness", () => {
+  it("goes to the verify card with Resend when the first verification email fails", async () => {
+    fb.sendVerification.mockRejectedValueOnce(new Error("boom"));
+    renderPage();
+    await fillForm();
+    submit();
+    expect(await screen.findByRole("heading", { name: /check your email/i })).toBeTruthy();
+    expect((await screen.findByRole("alert")).textContent).toMatch(/could not send/i);
+    expect(screen.getByRole("button", { name: /resend/i })).toBeTruthy();
+    expect(api.signup).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves focus to the new card heading", async () => {
+    renderPage();
+    await fillForm();
+    submit();
+    const heading = await screen.findByRole("heading", { name: /check your email/i });
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+  });
+});
+
 describe("register availability", () => {
   it("not available when Firebase is not configured", async () => {
     fb.firebaseAvailable.mockReturnValue(false);
@@ -241,6 +265,16 @@ describe("register availability", () => {
 
   it("not available when the API says not_available", async () => {
     api.config.mockRejectedValue(new ErpApiError(503, "not_available", "no"));
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+  });
+
+  it("not available when the Terms or Privacy link is blank", async () => {
+    api.config.mockResolvedValue({ ...config, terms_url: "" });
+    const { unmount } = renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+    unmount();
+    api.config.mockResolvedValue({ ...config, privacy_url: "" });
     renderPage();
     expect(await screen.findByText(/not available/i)).toBeTruthy();
   });

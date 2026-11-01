@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { AccountStatus } from "../lib/erpApi";
 import { describeAccount, type AccountView } from "./signup/accountState";
@@ -12,6 +13,18 @@ const WAITING: AccountView = {
   tone: "progress",
   title: "Confirming your payment",
   body: "We are waiting for our payment provider to confirm it. This usually takes a few seconds. Keep this page open; it updates on its own.",
+  portal: false,
+  portalLabel: "Manage billing",
+};
+
+/** How long to wait for Stripe's confirmation before telling the person to check in. */
+const WAIT_LIMIT_MS = 120_000;
+
+const STILL_WAITING: AccountView = {
+  kind: "started",
+  tone: "warn",
+  title: "Payment still not confirmed",
+  body: "We have not received confirmation yet. Check your account page, or contact support if you were charged.",
   portal: false,
   portalLabel: "Manage billing",
 };
@@ -35,10 +48,15 @@ const stepsFor = (status: AccountStatus | null) => {
 export default function CheckoutReturnPage() {
   useNoindex();
   const { phase, restart } = useAccountStatus(true);
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), WAIT_LIMIT_MS);
+    return () => clearTimeout(timer);
+  }, []);
   const status = phase.kind === "signed_in" ? phase.status : null;
   const described = status ? describeAccount(status) : null;
   const waiting = !described || described.kind === "started" || described.kind === "none";
-  const view = waiting ? WAITING : described;
+  const view = waiting ? (timedOut ? STILL_WAITING : WAITING) : described;
 
   return (
     <PageShell
@@ -72,6 +90,13 @@ export default function CheckoutReturnPage() {
               {status && view.kind === "ready" ? <ErpSignInLink status={status} /> : null}
               {status && view.portal ? <PortalButton label={view.portalLabel} /> : null}
             </div>
+            {waiting && timedOut ? (
+              <p className="mb-0 mt-5 text-[15px]">
+                <Link to="/account" className={linkClass}>
+                  Check your account
+                </Link>
+              </p>
+            ) : null}
             {status && view.kind === "ready" ? (
               <p className="mb-0 mt-5 text-[15px]">
                 <Link to="/account" className={linkClass}>

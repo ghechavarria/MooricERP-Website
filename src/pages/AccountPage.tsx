@@ -6,7 +6,10 @@ import { AccountGate } from "./signup/AccountGate";
 import { Alert, Card, ghostButton, Notice, PageShell, primaryButton } from "./signup/Layout";
 import { ContinueToPayment, ErpSignInLink, PortalButton, StatusHeading, SupportLine } from "./signup/StatusParts";
 import { useAccountStatus } from "./signup/useAccountStatus";
+import { useFocusHeading } from "./signup/useFocusHeading";
 import { useNoindex } from "./signup/useNoindex";
+
+const TRANSIENT = ["checking", "signed_in"] as const;
 
 const BILLING_LABELS: Record<string, string> = {
   active: "Active",
@@ -42,6 +45,7 @@ function AccountDashboard() {
   const { phase, restart, signOut } = useAccountStatus(false);
   const status = phase.kind === "signed_in" ? phase.status : null;
   const view = status ? describeAccount(status) : null;
+  const stepRef = useFocusHeading(status ? "status" : phase.kind, TRANSIENT);
 
   return (
     <PageShell
@@ -52,7 +56,7 @@ function AccountDashboard() {
     >
       <AccountGate phase={phase} onSignedIn={restart} signInHeading="Sign in to your account" />
       {phase.kind === "signed_in" ? (
-        <div className="grid max-w-[40rem] gap-5" aria-live="polite">
+        <div ref={stepRef} className="grid max-w-[40rem] gap-5" aria-live="polite">
           {phase.error ? <Alert>{phase.error}</Alert> : null}
           {status && view ? (
             <Card>

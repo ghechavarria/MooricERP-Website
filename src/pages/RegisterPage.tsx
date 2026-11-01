@@ -26,7 +26,10 @@ import { redirectTo } from "./signup/redirect";
 import { SignInForm } from "./signup/SignInForm";
 import { Turnstile } from "./signup/Turnstile";
 import { turnstileSiteKey } from "./signup/turnstileKey";
+import { useFocusHeading } from "./signup/useFocusHeading";
 import { useNoindex } from "./signup/useNoindex";
+
+const TRANSIENT = ["loading"] as const;
 
 type Session = { email: string | null; emailVerified: boolean };
 
@@ -37,7 +40,7 @@ type Phase =
   | { kind: "form" }
   | { kind: "signin" }
   | { kind: "resume" }
-  | { kind: "verify" }
+  | { kind: "verify"; message?: string }
   | { kind: "paid" };
 
 const PAID_STATES = new Set(["paid", "review", "provisioned", "claims_set", "email_sending", "ready"]);
@@ -56,6 +59,7 @@ export default function RegisterPage() {
   const [config, setConfig] = useState<AccountConfig | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const stepRef = useFocusHeading(phase.kind, TRANSIENT);
 
   const load = useCallback(async () => {
     if (!firebaseAvailable()) {
@@ -64,7 +68,7 @@ export default function RegisterPage() {
     }
     try {
       const [cfg, current] = await Promise.all([erpApi.config(), currentSession()]);
-      if (!cfg.signup_available || !cfg.terms_version) {
+      if (!cfg.signup_available || !cfg.terms_version || !cfg.terms_url || !cfg.privacy_url) {
         setPhase({ kind: "unavailable" });
         return;
       }
@@ -107,7 +111,7 @@ export default function RegisterPage() {
       title="Create your account"
       lead="Set up your account, confirm your email, then pay securely through Stripe."
     >
-      <div className="grid max-w-[34rem] gap-5">
+      <div ref={stepRef} className="grid max-w-[34rem] gap-5">
         {cancelled && ["form", "resume", "verify"].includes(phase.kind) ? (
           <Notice>Checkout was cancelled and nothing was charged. You can pick up where you left off.</Notice>
         ) : null}
@@ -125,7 +129,7 @@ export default function RegisterPage() {
         ) : null}
         {phase.kind === "paid" ? (
           <Card>
-            <h2 className="m-0 text-xl font-bold text-[#0a0e14]">You have already signed up</h2>
+            <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold text-[#0a0e14]">You have already signed up</h2>
             <p className="mb-5 mt-2 text-[15px] leading-6 text-[#48566b]">
               Your payment is on file. Check your account for the latest status.
             </p>
@@ -136,7 +140,7 @@ export default function RegisterPage() {
         ) : null}
         {phase.kind === "signin" && config ? (
           <Card>
-            <h2 className="m-0 mb-5 text-xl font-bold text-[#0a0e14]">Sign in to continue</h2>
+            <h2 tabIndex={-1} className="outline-none m-0 mb-5 text-xl font-bold text-[#0a0e14]">Sign in to continue</h2>
             <SignInForm onSignedIn={reload} />
             <p className="mb-0 mt-5">
               <button type="button" className={`${linkClass} bg-transparent p-0`} onClick={() => setPhase({ kind: "form" })}>
@@ -151,14 +155,14 @@ export default function RegisterPage() {
             session={session}
             onSession={setSession}
             onSignIn={() => setPhase({ kind: "signin" })}
-            onVerify={() => setPhase({ kind: "verify" })}
+            onVerify={(message) => setPhase({ kind: "verify", message })}
             onPaid={() => setPhase({ kind: "paid" })}
           />
         ) : null}
         {phase.kind === "resume" && config ? (
           <ResumeCard
             session={session}
-            onVerify={() => setPhase({ kind: "verify" })}
+            onVerify={(message) => setPhase({ kind: "verify", message })}
             onBack={() => setPhase({ kind: "form" })}
             onPaid={() => setPhase({ kind: "paid" })}
             onNeedDetails={() => setPhase({ kind: "form" })}
@@ -166,6 +170,7 @@ export default function RegisterPage() {
         ) : null}
         {phase.kind === "verify" ? (
           <VerifyCard
+            initialError={phase.message}
             session={session}
             onSession={setSession}
             onPaid={() => setPhase({ kind: "paid" })}
@@ -210,7 +215,7 @@ function ResumeCard({
   onNeedDetails,
 }: {
   session: Session | null;
-  onVerify: () => void;
+  onVerify: (message?: string) => void;
   onBack: () => void;
   onPaid: () => void;
   onNeedDetails: () => void;
@@ -236,7 +241,7 @@ function ResumeCard({
 
   return (
     <Card>
-      <h2 className="m-0 text-xl font-bold text-[#0a0e14]">Welcome back</h2>
+      <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold text-[#0a0e14]">Welcome back</h2>
       <p className="mb-5 mt-2 text-[15px] leading-6 text-[#48566b]">
         Your details are saved. Continue to payment to finish signing up.
       </p>
@@ -254,18 +259,20 @@ function ResumeCard({
 }
 
 function VerifyCard({
+  initialError = "",
   session,
   onSession,
   onPaid,
   onNeedDetails,
 }: {
+  initialError?: string;
   session: Session | null;
   onSession: (s: Session) => void;
   onPaid: () => void;
   onNeedDetails: () => void;
 }) {
   const [busy, setBusy] = useState<"" | "check" | "resend">("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const [notice, setNotice] = useState("");
 
   const resend = async () => {
@@ -309,7 +316,7 @@ function VerifyCard({
 
   return (
     <Card>
-      <h2 className="m-0 text-xl font-bold text-[#0a0e14]">Check your email</h2>
+      <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold text-[#0a0e14]">Check your email</h2>
       <p className="mb-0 mt-2 text-[15px] leading-6 text-[#48566b]">
         We sent a verification link{session?.email ? ` to ${session.email}` : ""}. Click it, then come back here to
         continue to payment.
@@ -342,7 +349,7 @@ function DetailsForm({
   session: Session | null;
   onSession: (s: Session) => void;
   onSignIn: () => void;
-  onVerify: () => void;
+  onVerify: (message?: string) => void;
   onPaid: () => void;
 }) {
   const [first, setFirst] = useState("");
@@ -395,6 +402,7 @@ function DetailsForm({
     try {
       if (!session) {
         await registerUser(email.trim(), password);
+        setPassword("");
         // From here the person is signed in, so a retry must not create the account again.
         onSession({ email: email.trim(), emailVerified: false });
       }
@@ -407,8 +415,12 @@ function DetailsForm({
       });
       if (siteKey) setResetSignal((n) => n + 1);
       if (!verified) {
-        await sendVerification();
-        onVerify();
+        try {
+          await sendVerification();
+          onVerify();
+        } catch {
+          onVerify("We saved your details but could not send the verification email. Use Resend email to try again.");
+        }
         return;
       }
       const result = await startCheckout();

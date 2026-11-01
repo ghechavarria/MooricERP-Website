@@ -21,7 +21,10 @@ vi.mock("../lib/firebase", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../lib/firebase")>()),
   ...fb,
 }));
-vi.mock("./signup/redirect", () => nav);
+vi.mock("./signup/redirect", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./signup/redirect")>()),
+  ...nav,
+}));
 
 import { ErpApiError, type AccountStatus, type PollOptions } from "../lib/erpApi";
 import AccountPage from "./AccountPage";
@@ -164,6 +167,22 @@ describe("account links", () => {
     renderPage();
     await screen.findByText(/payment (has not|hasn't) been completed/i);
     expect(screen.queryByRole("button", { name: /manage billing/i })).toBeNull();
+  });
+});
+
+describe("erp link safety", () => {
+  it("ignores an erp_url that is not https", async () => {
+    serve(status({ erp_url: "http://evil.example.test" }));
+    renderPage();
+    await screen.findByText(/your account is ready/i);
+    expect(screen.queryByRole("link", { name: /sign in to mooric erp/i })).toBeNull();
+  });
+
+  it("ignores a javascript: erp_url", async () => {
+    serve(status({ erp_url: "javascript:alert(1)" }));
+    renderPage();
+    await screen.findByText(/your account is ready/i);
+    expect(screen.queryByRole("link", { name: /sign in to mooric erp/i })).toBeNull();
   });
 });
 

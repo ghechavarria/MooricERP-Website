@@ -4,7 +4,7 @@ import { erpApi, type AccountStatus } from "../../lib/erpApi";
 import type { AccountView } from "./accountState";
 import { friendlyError } from "./errors";
 import { Alert, ghostButton, linkClass, primaryButton } from "./Layout";
-import { redirectTo } from "./redirect";
+import { redirectTo, safeUrl } from "./redirect";
 
 const toneClasses: Record<AccountView["tone"], string> = {
   ok: "bg-emerald-500",
@@ -26,7 +26,7 @@ export function StatusHeading({ view }: { view: AccountView }) {
         <span aria-hidden className={`mt-2 h-3 w-3 shrink-0 rounded-full ${toneClasses[view.tone]}`} />
       )}
       <div className="min-w-0">
-        <h2 className="m-0 text-xl font-bold leading-snug text-[#0a0e14] break-words">{view.title}</h2>
+        <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold leading-snug text-[#0a0e14] break-words">{view.title}</h2>
         <p className="mb-0 mt-2 text-[15px] leading-6 text-[#48566b]">{view.body}</p>
       </div>
     </div>
@@ -60,9 +60,10 @@ export function PortalButton({ label }: { label: string }) {
 
 /** The ERP sign-in link. Only ever built from the server's status.erp_url. */
 export function ErpSignInLink({ status }: { status: AccountStatus }) {
-  if (!status.erp_url) return null;
+  const href = safeUrl(status.erp_url);
+  if (!href) return null;
   return (
-    <a href={status.erp_url} className={primaryButton}>
+    <a href={href} className={primaryButton}>
       Sign in to Mooric ERP
     </a>
   );

@@ -27,6 +27,7 @@ export function SignInForm({ onSignedIn }: { onSignedIn: () => void }) {
     setError("");
     try {
       const result = await signIn(email.trim(), password);
+      setPassword("");
       if (result.status === "mfa_required") setResolver(result.resolver);
       else onSignedIn();
     } catch (e) {

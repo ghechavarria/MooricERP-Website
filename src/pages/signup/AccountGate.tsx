@@ -20,7 +20,7 @@ export function AccountGate({
   if (phase.kind === "signin") {
     return (
       <Card className="max-w-[28rem]">
-        <h2 className="m-0 mb-5 text-xl font-bold text-[#0a0e14]">{signInHeading}</h2>
+        <h2 tabIndex={-1} className="outline-none m-0 mb-5 text-xl font-bold text-[#0a0e14]">{signInHeading}</h2>
         <SignInForm onSignedIn={onSignedIn} />
       </Card>
     );

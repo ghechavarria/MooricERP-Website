@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 const api = vi.hoisted(() => ({ pollStatus: vi.fn() }));
@@ -100,6 +100,23 @@ describe("checkout return", () => {
     renderReturn();
     expect(await screen.findByText(/under review/i)).toBeTruthy();
     expect(screen.queryByRole("link", { name: /sign in to mooric erp/i })).toBeNull();
+  });
+
+  it("after about two minutes without confirmation it says so and points to the account page", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      poll(status({ state: "started" }));
+      renderReturn();
+      expect(await screen.findByText(/confirming your payment/i)).toBeTruthy();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(121_000);
+      });
+      expect(screen.getByText(/payment still not confirmed/i)).toBeTruthy();
+      expect(screen.getByRole("link", { name: /check your account/i }).getAttribute("href")).toBe("/account");
+      expect(screen.queryByText(/account is ready/i)).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("also works as the standalone /checkout/return page", async () => {
