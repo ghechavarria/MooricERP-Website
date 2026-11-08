@@ -87,7 +87,13 @@ describe("header", () => {
     expect(signInDesktop).toHaveLength(1);
     expect(signInDesktop[0].getAttribute("href")).toBe("https://erp.example.test");
     expect(screen.getAllByRole("link", { name: "Get started" })[0].getAttribute("href")).toBe("/register");
-    expect(screen.getAllByRole("button", { name: "Book a demo" })).toHaveLength(1);
+    const demo = screen.getByRole("button", { name: "Book a demo" });
+    const getStarted = screen.getAllByRole("link", { name: "Get started" })[0];
+    // one primary action: Get started last and solid, Book a demo outlined before it
+    expect(demo.compareDocumentPosition(getStarted) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(signInDesktop[0].compareDocumentPosition(demo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(getStarted.className).toContain("btn-primary-silver");
+    expect(demo.className).not.toContain("btn-primary-silver");
 
     fireEvent.click(screen.getByLabelText("Open menu"));
     const mobile = screen.getByRole("navigation", { name: "Mobile" });

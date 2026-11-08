@@ -5,6 +5,9 @@ import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
 import { ERP_URL, ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
 
+const HEADER_SECONDARY_BTN =
+  "inline-flex items-center justify-center rounded-md border border-organ-200 bg-white font-semibold text-organ-950 transition hover:border-erp hover:text-erp";
+
 const exploreLinks = [
   { label: "Capabilities", to: "/#capabilities" },
   { label: "Application & intake", to: "/#intake" },
@@ -194,25 +197,26 @@ export function Header() {
             ))}
           </nav>
           {SIGNUP_NAV_ENABLED && ERP_URL ? (
-            <a href={ERP_URL} className="nav-link ml-3 shrink-0">
+            <a href={ERP_URL} className="nav-link ml-5 shrink-0 min-[1800px]:ml-7">
               Sign in
             </a>
           ) : null}
-          {SIGNUP_NAV_ENABLED ? (
-            <Link
-              to={ROUTES.register}
-              className="btn-primary-silver shrink-0 px-3 py-2 text-[13px] min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm"
-            >
-              Get started
-            </Link>
-          ) : null}
+          {/* With signup on, Get started is the one primary action; Book a demo steps back to secondary. */}
           <button
             type="button"
-            className={`btn-primary-silver ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+            className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
             onClick={() => openContactModal("briefing")}
           >
             Book a demo
           </button>
+          {SIGNUP_NAV_ENABLED ? (
+            <Link
+              to={ROUTES.register}
+              className="btn-primary-silver ml-2 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-3 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm"
+            >
+              Get started
+            </Link>
+          ) : null}
         </div>
 
         <button
@@ -314,7 +318,7 @@ export function Header() {
                 ) : null}
                 <button
                   type="button"
-                  className={`btn-primary-silver mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+                  className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
                   onClick={() => {
                     setMenuOpen(false);
                     openContactModal("briefing");
