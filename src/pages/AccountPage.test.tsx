@@ -290,6 +290,7 @@ describe("account sign-in", () => {
     serve(status({ loans_used: 12, loans_included: 10, verified: false }));
     renderPage();
     expect(await screen.findByText("ada@example.test")).toBeTruthy();
+    expect(screen.getByText("12 of 10 loans used")).toBeTruthy();
     expect(screen.getByText("Active")).toBeTruthy();
     expect(screen.getByText("Pending check")).toBeTruthy();
     const bar = screen.getByRole("progressbar", { name: /included loans used/i });

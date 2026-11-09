@@ -54,7 +54,7 @@ function LoansTile({ used, included }: { used: number; included: number }) {
   return (
     <Tile label="Loans this period">
       <span>
-        {used} of {included} loans included
+        {used} of {included} loans used
       </span>
       <span
         role="progressbar"
