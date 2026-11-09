@@ -91,7 +91,12 @@ function PlanSection({ plan }: { plan: Plan }) {
           </div>
         </div>
       </section>
-      <Questions included={plan.included_loans} overage={formatMoney(plan.overage_cents)} />
+      <Questions
+        included={plan.included_loans}
+        overage={formatMoney(plan.overage_cents)}
+        price={formatMoney(plan.price_cents)}
+        trial={Boolean(plan.trial_days)}
+      />
     </>
   );
 }
@@ -114,6 +119,11 @@ function PlanCard({ plan }: { plan: Plan }) {
         <p className="m-0 mt-2 text-[15px] font-semibold text-[#2b3648]">+ applicable tax</p>
       </div>
       <ul className="m-0 grid min-w-0 list-none gap-3 border-t border-[#e4ebf4] p-0 pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0 lg:pl-10">
+        {plan.trial_days ? (
+          <li className="v4-bullet">
+            <span>First month free</span>
+          </li>
+        ) : null}
         <li className="v4-bullet">
           <span>{plan.included_loans} loans included each month</span>
         </li>
@@ -138,8 +148,26 @@ function PlanCard({ plan }: { plan: Plan }) {
   );
 }
 
-function Questions({ included, overage }: { included: number; overage: string }) {
+function Questions({
+  included,
+  overage,
+  price,
+  trial,
+}: {
+  included: number;
+  overage: string;
+  price: string;
+  trial: boolean;
+}) {
   const items = [
+    ...(trial
+      ? [
+          {
+            q: "Is the first month free?",
+            a: `Yes. Your first month's subscription is free, and your first ${price} charge comes a month after you sign up. Loans past your first ${included} that month are still ${overage} each, added to that first bill.`,
+          },
+        ]
+      : []),
     {
       q: "What counts toward my monthly loans?",
       a: `Each loan counts once, in the billing period of its application date. The first ${included} in each period are part of your plan.`,

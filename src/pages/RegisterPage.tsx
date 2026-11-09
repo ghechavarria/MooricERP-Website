@@ -259,6 +259,7 @@ function PlanSummary({ plan }: { plan: AccountConfig["plan"] }) {
         </p>
       </div>
       <ul className="m-0 mt-3 grid list-none gap-1.5 border-t border-[#d9e6f5] p-0 pt-3 text-[14px] text-[#2b3648] sm:grid-cols-2">
+        {plan.trial_days ? <li>First month free</li> : null}
         <li>{plan.included_loans} loans included each month</li>
         <li>{formatMoney(plan.overage_cents)} per additional loan</li>
       </ul>

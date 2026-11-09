@@ -26,6 +26,8 @@ export type AccountConfig = {
     price_cents: number;
     included_loans: number;
     overage_cents: number;
+    /** Free trial length in days; 0 or missing means no free month. */
+    trial_days?: number;
   };
   terms_url: string;
   privacy_url: string;

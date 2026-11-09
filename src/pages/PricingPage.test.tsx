@@ -41,6 +41,22 @@ describe("pricing", () => {
     expect(screen.getByRole("link", { name: /get started/i }).getAttribute("href")).toBe("/register");
   });
 
+  it("shows the free first month, and that extra loans are still charged, only when the plan has a trial", async () => {
+    api.config.mockResolvedValue(
+      config({ plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500, trial_days: 30 } }),
+    );
+    const { unmount } = renderPage();
+    expect(await screen.findByText("First month free")).toBeTruthy();
+    expect(screen.getAllByRole("listitem")[0].textContent).toBe("First month free");
+    expect(screen.getByText(/Loans past your first 10 that month are still \$15 each/)).toBeTruthy();
+    unmount();
+    api.config.mockResolvedValue(config());
+    renderPage();
+    expect(await screen.findByText("$50")).toBeTruthy();
+    expect(screen.queryByText("First month free")).toBeNull();
+    expect(screen.queryByText(/Is the first month free/)).toBeNull();
+  });
+
   it("formats from plan data, not a fixed price", async () => {
     api.config.mockResolvedValue(
       config({ plan: { code: "x", name: "Pro", price_cents: 12950, included_loans: 25, overage_cents: 900 } }),
