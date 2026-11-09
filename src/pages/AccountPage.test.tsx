@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-const api = vi.hoisted(() => ({ portal: vi.fn(), pollStatus: vi.fn() }));
+const api = vi.hoisted(() => ({ portal: vi.fn(), pollStatus: vi.fn(), config: vi.fn() }));
 const fb = vi.hoisted(() => ({
   firebaseAvailable: vi.fn(() => true),
   currentSession: vi.fn(),
@@ -14,7 +14,7 @@ const nav = vi.hoisted(() => ({ redirectTo: vi.fn(), reloadAt: vi.fn() }));
 
 vi.mock("../lib/erpApi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../lib/erpApi")>()),
-  erpApi: { portal: api.portal },
+  erpApi: { portal: api.portal, config: api.config },
   pollStatus: api.pollStatus,
 }));
 vi.mock("../lib/firebase", async (importOriginal) => ({
@@ -69,6 +69,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   lastOptions = undefined;
   fb.firebaseAvailable.mockReturnValue(true);
+  api.config.mockResolvedValue({ plan: { overage_cents: 1500 } });
   fb.currentSession.mockResolvedValue({ email: "ada@example.test", emailVerified: true });
   api.portal.mockResolvedValue({ url: "https://billing.example.test/p/1" });
 });
@@ -293,7 +294,16 @@ describe("account sign-in", () => {
     expect(screen.getByText("Pending check")).toBeTruthy();
     const bar = screen.getByRole("progressbar", { name: /included loans used/i });
     expect(bar.getAttribute("aria-valuenow")).toBe("10");
-    expect(screen.getByText(/2 extra loans this period/i)).toBeTruthy();
+    expect(screen.getByText("2 extra loans")).toBeTruthy();
+    expect(await screen.findByText("$15 each, $30 so far this period")).toBeTruthy();
+  });
+
+  it("extra loans show none yet, and still read sensibly without the price", async () => {
+    api.config.mockRejectedValue(new Error("offline"));
+    serve(status({ loans_used: 3, loans_included: 10 }));
+    renderPage();
+    expect(await screen.findByText("0 extra loans")).toBeTruthy();
+    expect(screen.getByText("Billed per loan after the first 10")).toBeTruthy();
   });
 
   it("after signing out the page confirms it above the sign-in form", async () => {

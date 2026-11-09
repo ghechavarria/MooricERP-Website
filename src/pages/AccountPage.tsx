@@ -1,10 +1,11 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import type { AccountStatus } from "../lib/erpApi";
+import { erpApi, type AccountStatus } from "../lib/erpApi";
 import CheckoutReturnPage from "./CheckoutReturnPage";
 import { describeAccount } from "./signup/accountState";
 import { AccountGate } from "./signup/AccountGate";
 import { Alert, Card, ghostButton, Notice, PageShell, primaryButton } from "./signup/Layout";
+import { formatMoney } from "./signup/format";
 import { SIGNED_OUT_PARAM } from "./signup/signOut";
 import { ContinueToPayment, ErpSignInLink, PortalButton, StatusHeading, SupportLine } from "./signup/StatusParts";
 import { useAccountStatus } from "./signup/useAccountStatus";
@@ -65,20 +66,33 @@ function LoansTile({ used, included }: { used: number; included: number }) {
       >
         <span className={`block h-full rounded-full ${extra ? "bg-amber-500" : "bg-erp"}`} style={{ width: `${pct}%` }} />
       </span>
-      {extra ? (
-        <span className="mt-2 block text-[13px] font-medium text-amber-800">
-          {extra} extra {extra === 1 ? "loan" : "loans"} this period
-        </span>
-      ) : null}
     </Tile>
   );
 }
 
-function Details({ status }: { status: AccountStatus }) {
+/** Loans past the plan's allowance this period, and what they add at the plan's overage price. */
+function ExtraLoansTile({ used, included, overageCents }: { used: number; included: number; overageCents: number | null }) {
+  const extra = Math.max(0, used - included);
+  const price = overageCents !== null ? formatMoney(overageCents) : null;
+  let note: string;
+  if (price === null) note = `Billed per loan after the first ${included}`;
+  else if (extra === 0) note = `${price} each after the first ${included}`;
+  else note = `${price} each, ${formatMoney(extra * (overageCents ?? 0))} so far this period`;
+  return (
+    <Tile label="Extra loans">
+      <span className={extra ? "text-amber-800" : undefined}>
+        {extra} extra {extra === 1 ? "loan" : "loans"}
+      </span>
+      <span className="mt-1 block text-[13px] font-medium text-[#5b6a80]">{note}</span>
+    </Tile>
+  );
+}
+
+function Details({ status, overageCents }: { status: AccountStatus; overageCents: number | null }) {
   if (status.billing_status === null) return null;
   const billing = BILLING[status.billing_status] ?? { label: status.billing_status, tone: "muted" as Tone };
   return (
-    <dl className="m-0 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <dl className="m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <Tile label="Plan">{status.plan ? status.plan.charAt(0).toUpperCase() + status.plan.slice(1) : "-"}</Tile>
       <Tile label="Billing">
         <Pill tone={billing.tone}>{billing.label}</Pill>
@@ -86,9 +100,35 @@ function Details({ status }: { status: AccountStatus }) {
       <Tile label="Business details">
         <Pill tone={status.verified ? "ok" : "info"}>{status.verified ? "Verified" : "Pending check"}</Pill>
       </Tile>
-      {status.loans_included !== null ? <LoansTile used={status.loans_used} included={status.loans_included} /> : null}
+      {status.loans_included !== null ? (
+        <>
+          <LoansTile used={status.loans_used} included={status.loans_included} />
+          <ExtraLoansTile used={status.loans_used} included={status.loans_included} overageCents={overageCents} />
+        </>
+      ) : null}
     </dl>
   );
+}
+
+/** The plan's price per extra loan, from the public plan config. Null until loaded or if it fails. */
+function useOveragePrice(enabled: boolean): number | null {
+  const [cents, setCents] = useState<number | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    erpApi
+      .config()
+      .then((config) => {
+        if (!cancelled) setCents(config.plan.overage_cents);
+      })
+      .catch(() => {
+        // The tile falls back to wording without a price.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+  return cents;
 }
 
 function AccountBar({ email, onSignOut }: { email: string | null; onSignOut: () => void }) {
@@ -112,6 +152,7 @@ function AccountDashboard() {
   const status = phase.kind === "signed_in" ? phase.status : null;
   const view = status ? describeAccount(status) : null;
   const stepRef = useFocusHeading(status ? "status" : phase.kind, TRANSIENT);
+  const overageCents = useOveragePrice(phase.kind === "signed_in");
 
   return (
     <PageShell
@@ -151,7 +192,7 @@ function AccountDashboard() {
                   </div>
                 </div>
               </Card>
-              <Details status={status} />
+              <Details status={status} overageCents={overageCents} />
             </>
           ) : (
             !phase.error && <Notice>Loading your account…</Notice>
