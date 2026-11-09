@@ -77,7 +77,6 @@ export function SupportLine({ status }: { status: AccountStatus | null }) {
       <a href={`mailto:${status.support_email}`} className={linkClass}>
         {status.support_email}
       </a>
-      .
     </p>
   );
 }

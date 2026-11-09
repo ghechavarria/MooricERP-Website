@@ -40,8 +40,8 @@ function YouTubeIcon() {
 export function Footer() {
   return (
     <footer className="border-t border-[#e4ebf4] bg-white">
-      {/* Stacked and tight on phones; from md, three columns with the
-          icons and legal links centred between the logo and the copyright. */}
+      {/* Stacked and tight on phones; from md, three columns: logo, icons
+          centred, and the legal links with the copyright on the right. */}
       <div className="layout-shell flex flex-col items-center gap-4 py-6 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6 md:py-[1.8rem]">
         <Link
           to="/#top"
@@ -71,27 +71,27 @@ export function Footer() {
             </span>
           </span>
         </Link>
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <a
-              href="https://www.linkedin.com/company/mooricerp"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Mooric ERP on LinkedIn"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
-            >
-              <LinkedInIcon />
-            </a>
-            <a
-              href="https://www.youtube.com/@MooricERP"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Mooric Corporation on YouTube"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
-            >
-              <YouTubeIcon />
-            </a>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <a
+            href="https://www.linkedin.com/company/mooricerp"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Mooric ERP on LinkedIn"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
+          >
+            <LinkedInIcon />
+          </a>
+          <a
+            href="https://www.youtube.com/@MooricERP"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Mooric Corporation on YouTube"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
+          >
+            <YouTubeIcon />
+          </a>
+        </div>
+        <div className="flex flex-col items-center gap-2 md:items-end md:justify-self-end">
           {SIGNUP_NAV_ENABLED ? (
             <nav aria-label="Legal" className="flex items-center gap-5 whitespace-nowrap text-[13px]">
               <Link to={ROUTES.terms} className="text-[#5c6b80] transition hover:text-erp">
@@ -102,8 +102,8 @@ export function Footer() {
               </Link>
             </nav>
           ) : null}
+          <p className="m-0 whitespace-nowrap font-mono text-xs text-[#5c6b80]">© {new Date().getFullYear()} Mooric ERP</p>
         </div>
-        <p className="m-0 whitespace-nowrap font-mono text-xs text-[#5c6b80] md:justify-self-end">© {new Date().getFullYear()} Mooric ERP</p>
       </div>
     </footer>
   );
