@@ -30,7 +30,7 @@ function Details({ status }: { status: AccountStatus }) {
     rows.push(["Loans this period", `${status.loans_used} of ${status.loans_included} loans included`]);
   }
   return (
-    <dl className="m-0 mt-6 grid gap-x-8 gap-y-3 border-t border-[#e4ebf4] pt-5 sm:grid-cols-2">
+    <dl className="m-0 mt-6 grid gap-x-8 gap-y-3 border-t border-[#e4ebf4] pt-5 sm:grid-cols-2 lg:grid-cols-4">
       {rows.map(([name, value]) => (
         <div key={name} className="min-w-0">
           <dt className="text-[13px] font-semibold uppercase tracking-wide text-[#5b6a80]">{name}</dt>
@@ -64,7 +64,7 @@ function AccountDashboard() {
       ) : null}
       <AccountGate phase={phase} onSignedIn={restart} signInHeading="Sign in to your account" />
       {phase.kind === "signed_in" ? (
-        <div ref={stepRef} className="grid max-w-[40rem] gap-5" aria-live="polite">
+        <div ref={stepRef} className="grid w-full gap-5" aria-live="polite">
           {phase.error ? <Alert>{phase.error}</Alert> : null}
           {status && view ? (
             <Card>
