@@ -253,7 +253,7 @@ export function Header() {
                     </a>
                   ) : null}
                   <Link to={ROUTES.account} onClick={() => setAccountOpen(false)}>
-                    Details
+                    Account Details
                   </Link>
                   <button
                     type="button"
@@ -387,7 +387,7 @@ export function Header() {
                           </a>
                         ) : null}
                         <Link to={ROUTES.account} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
-                          Details
+                          Account Details
                         </Link>
                         <button
                           type="button"

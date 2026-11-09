@@ -47,7 +47,7 @@ describe("header when signed in", () => {
     expect(bar.queryByRole("link", { name: "Get started" })).toBeNull();
     fireEvent.click(bar.getByRole("button", { name: /account/i }));
     expect(bar.getByRole("link", { name: "Mooric ERP" }).getAttribute("href")).toBe("https://erp.example.test");
-    expect(bar.getByRole("link", { name: "Details" }).getAttribute("href")).toBe("/account");
+    expect(bar.getByRole("link", { name: "Account Details" }).getAttribute("href")).toBe("/account");
     expect(bar.getByRole("button", { name: "Sign Out" })).toBeTruthy();
   });
 
@@ -67,7 +67,7 @@ describe("header when signed in", () => {
     expect(menu.queryByRole("button", { name: "Book a demo" })).toBeNull();
     fireEvent.click(menu.getByRole("button", { name: /account/i }));
     expect(menu.getByRole("link", { name: "Mooric ERP" })).toBeTruthy();
-    expect(menu.getByRole("link", { name: "Details" }).getAttribute("href")).toBe("/account");
+    expect(menu.getByRole("link", { name: "Account Details" }).getAttribute("href")).toBe("/account");
     expect(menu.getByRole("button", { name: "Sign Out" })).toBeTruthy();
   });
 });
