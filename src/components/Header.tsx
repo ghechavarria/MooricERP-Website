@@ -6,6 +6,18 @@ import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
 import { ERP_URL, ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
 import { useSessionHint } from "../lib/sessionHint";
 
+/**
+ * Signs out from the header. The sign-out code (and Firebase) loads only when
+ * someone clicks, so the main bundle stays without it. On success the browser
+ * goes to the account page, which confirms the sign-out; if it fails, that page
+ * has its own Sign out button that shows why.
+ */
+const signOutFromHeader = async () => {
+  const { signOutCompletely } = await import("../pages/signup/signOut");
+  const problem = await signOutCompletely();
+  if (problem) window.location.assign(ROUTES.account);
+};
+
 const HEADER_SECONDARY_BTN =
   "inline-flex items-center justify-center rounded-md border border-organ-200 bg-white font-semibold text-organ-950 transition hover:border-erp hover:text-erp";
 
@@ -82,11 +94,17 @@ export function Header() {
   const { pathname, hash } = useLocation();
   const { openContactModal } = useContactModal();
   const signedIn = useSessionHint();
+  /** Signed in on this browser: the nav swaps its sign-up actions for an Account menu. */
+  const accountNav = SIGNUP_NAV_ENABLED && signedIn;
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
 
   useEffect(() => {
     setExploreOpen(false);
+    setAccountOpen(false);
     setMenuOpen(false);
     setMobileExploreOpen(false);
+    setMobileAccountOpen(false);
   }, [pathname, hash]);
 
   useEffect(() => {
@@ -97,17 +115,18 @@ export function Header() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!menuOpen && !exploreOpen) return undefined;
+    if (!menuOpen && !exploreOpen && !accountOpen) return undefined;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenuOpen(false);
         setExploreOpen(false);
+        setAccountOpen(false);
         setMobileExploreOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen, exploreOpen]);
+  }, [menuOpen, exploreOpen, accountOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1440px)");
@@ -117,6 +136,7 @@ export function Header() {
         setMobileExploreOpen(false);
       } else {
         setExploreOpen(false);
+        setAccountOpen(false);
       }
     };
     mq.addEventListener("change", onViewport);
@@ -197,21 +217,74 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            {accountNav ? (
+              <span
+                className="relative flex items-center"
+                onMouseEnter={() => setAccountOpen(true)}
+                onMouseLeave={() => setAccountOpen(false)}
+              >
+                <button
+                  type="button"
+                  className="nav-link inline-flex items-center gap-1.5 border-0 bg-transparent p-0"
+                  aria-expanded={accountOpen}
+                  aria-haspopup="true"
+                  onClick={() => {
+                    if (window.matchMedia("(hover: none)").matches) {
+                      setAccountOpen((o) => !o);
+                      return;
+                    }
+                    setAccountOpen(true);
+                  }}
+                >
+                  Account
+                  <Chevron open={accountOpen} />
+                </button>
+                <span
+                  className="explore-panel explore-panel-end"
+                  style={{
+                    display: accountOpen ? "flex" : "none",
+                    opacity: accountOpen ? 1 : 0,
+                    transform: accountOpen ? "translateY(0)" : "translateY(-6px)",
+                  }}
+                >
+                  {ERP_URL ? (
+                    <a href={ERP_URL} onClick={() => setAccountOpen(false)}>
+                      Mooric ERP
+                    </a>
+                  ) : null}
+                  <Link to={ROUTES.account} onClick={() => setAccountOpen(false)}>
+                    Details
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountOpen(false);
+                      void signOutFromHeader();
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </span>
+              </span>
+            ) : null}
           </nav>
           {/* With signup on, Get started is the one primary action; Book a demo steps back to secondary. */}
-          <button
-            type="button"
-            className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
-            onClick={() => openContactModal("briefing")}
-          >
-            Book a demo
-          </button>
-          {SIGNUP_NAV_ENABLED ? (
+          {/* Signed in, the Account menu above replaces both buttons. */}
+          {accountNav ? null : (
+            <button
+              type="button"
+              className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+              onClick={() => openContactModal("briefing")}
+            >
+              Book a demo
+            </button>
+          )}
+          {SIGNUP_NAV_ENABLED && !accountNav ? (
             <Link
-              to={signedIn ? ROUTES.account : ROUTES.register}
+              to={ROUTES.register}
               className="btn-primary-silver ml-2 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-3 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm"
             >
-              {signedIn ? "Account" : "Get started"}
+              Get started
             </Link>
           ) : null}
         </div>
@@ -295,39 +368,77 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                {SIGNUP_NAV_ENABLED && ERP_URL ? (
-                  <a
-                    href={ERP_URL}
-                    className="rounded-lg px-3 py-3.5 text-[15px] font-medium text-[#3d4757] active:text-erp"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Sign in
-                  </a>
-                ) : null}
-                {SIGNUP_NAV_ENABLED ? (
-                  <Link
-                    to={signedIn ? ROUTES.account : ROUTES.register}
-                    className="btn-primary-silver mt-3 block w-full px-3 py-3.5 text-center text-base font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {signedIn ? "Account" : "Get started"}
-                  </Link>
-                ) : null}
-                <button
-                  type="button"
-                  className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    openContactModal("briefing");
-                  }}
-                >
-                  Book a demo
-                </button>
-                <p
-                  className={`mt-2 text-center text-xs text-organ-600${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
-                >
-                  First month free
-                </p>
+                {accountNav ? (
+                  <>
+                    <button
+                      type="button"
+                      className="flex items-center justify-between rounded-lg px-3 py-3.5 text-left text-[15px] font-medium text-[#3d4757]"
+                      aria-expanded={mobileAccountOpen}
+                      onClick={() => setMobileAccountOpen((o) => !o)}
+                    >
+                      Account
+                      <Chevron open={mobileAccountOpen} />
+                    </button>
+                    {mobileAccountOpen ? (
+                      <>
+                        {ERP_URL ? (
+                          <a href={ERP_URL} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
+                            Mooric ERP
+                          </a>
+                        ) : null}
+                        <Link to={ROUTES.account} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
+                          Details
+                        </Link>
+                        <button
+                          type="button"
+                          className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp text-left"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            void signOutFromHeader();
+                          }}
+                        >
+                          Sign Out
+                        </button>
+                      </>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    {SIGNUP_NAV_ENABLED && ERP_URL ? (
+                      <a
+                        href={ERP_URL}
+                        className="rounded-lg px-3 py-3.5 text-[15px] font-medium text-[#3d4757] active:text-erp"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Sign in
+                      </a>
+                    ) : null}
+                    {SIGNUP_NAV_ENABLED ? (
+                      <Link
+                        to={ROUTES.register}
+                        className="btn-primary-silver mt-3 block w-full px-3 py-3.5 text-center text-base font-semibold"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Get started
+                      </Link>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        openContactModal("briefing");
+                      }}
+                    >
+                      Book a demo
+                    </button>
+                    <p
+                      className={`mt-2 text-center text-xs text-organ-600${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+                    >
+                      First month free
+                    </p>
+                  </>
+                )}
               </nav>
             </div>
           </div>,
