@@ -29,4 +29,6 @@ export const ROUTES = {
   register: "/register",
   account: "/account",
   checkoutReturn: "/checkout/return",
+  terms: "/terms",
+  privacy: "/privacy",
 } as const;

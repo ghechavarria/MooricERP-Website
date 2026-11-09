@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
 
 function LinkedInIcon() {
   return (
@@ -88,6 +89,16 @@ export function Footer() {
             <YouTubeIcon />
           </a>
         </div>
+        {SIGNUP_NAV_ENABLED ? (
+          <nav aria-label="Legal" className="flex items-center gap-5 text-[13px]">
+            <Link to={ROUTES.terms} className="text-[#5c6b80] transition hover:text-erp">
+              Terms of Use
+            </Link>
+            <Link to={ROUTES.privacy} className="text-[#5c6b80] transition hover:text-erp">
+              Privacy Policy
+            </Link>
+          </nav>
+        ) : null}
         <p className="font-mono text-xs text-[#5c6b80]">© {new Date().getFullYear()} Mooric ERP</p>
       </div>
     </footer>

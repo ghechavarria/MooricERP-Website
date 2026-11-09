@@ -56,6 +56,8 @@ describe("signup flags", () => {
       register: "/register",
       account: "/account",
       checkoutReturn: "/checkout/return",
+      terms: "/terms",
+      privacy: "/privacy",
     });
   });
 });

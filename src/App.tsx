@@ -29,6 +29,13 @@ const signupPages =
       ]
     : [];
 
+// Terms of Use and Privacy Policy are always routed: signup links to them, and they
+// stand on their own. Lazy, so they add nothing to the home page's bundle.
+const legalPages = [
+  { path: ROUTES.terms, Page: lazy(() => import("./pages/legal/TermsPage")) },
+  { path: ROUTES.privacy, Page: lazy(() => import("./pages/legal/PrivacyPage")) },
+];
+
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
 
@@ -83,7 +90,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/team" element={<TeamPage />} />
-            {signupPages.map(({ path, Page }) => (
+            {[...legalPages, ...signupPages].map(({ path, Page }) => (
               <Route
                 key={path}
                 path={path}
