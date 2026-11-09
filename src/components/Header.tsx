@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
 import { ERP_URL, ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
-import { useSessionHint } from "../lib/sessionHint";
+import { useErpAccessHint, useSessionHint } from "../lib/sessionHint";
 
 /**
  * Signs out from the header. The sign-out code (and Firebase) loads only when
@@ -94,6 +94,8 @@ export function Header() {
   const { pathname, hash } = useLocation();
   const { openContactModal } = useContactModal();
   const signedIn = useSessionHint();
+  /** "Mooric ERP" only once the account status has shown this person has access. */
+  const erpLink = useErpAccessHint() && ERP_URL ? ERP_URL : "";
   /** Signed in on this browser: the nav swaps its sign-up actions for an Account menu. */
   const accountNav = SIGNUP_NAV_ENABLED && signedIn;
   const [accountOpen, setAccountOpen] = useState(false);
@@ -250,8 +252,8 @@ export function Header() {
                   <Link to={ROUTES.account} onClick={() => setAccountOpen(false)}>
                     Account Details
                   </Link>
-                  {ERP_URL ? (
-                    <a href={ERP_URL} onClick={() => setAccountOpen(false)}>
+                  {erpLink ? (
+                    <a href={erpLink} onClick={() => setAccountOpen(false)}>
                       Mooric ERP
                     </a>
                   ) : null}
@@ -384,8 +386,8 @@ export function Header() {
                         <Link to={ROUTES.account} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
                           Account Details
                         </Link>
-                        {ERP_URL ? (
-                          <a href={ERP_URL} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
+                        {erpLink ? (
+                          <a href={erpLink} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
                             Mooric ERP
                           </a>
                         ) : null}

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { readSessionHint, useSessionHint, writeSessionHint } from "./sessionHint";
+import { readErpAccessHint, readSessionHint, useSessionHint, writeErpAccessHint, writeSessionHint } from "./sessionHint";
 
 afterEach(() => window.localStorage.clear());
 
@@ -22,5 +22,22 @@ describe("session hint", () => {
       window.dispatchEvent(new StorageEvent("storage", { key: "mooric.signedIn" }));
     });
     expect(result.current).toBe(true);
+  });
+});
+
+
+describe("ERP access hint", () => {
+  it("counts only while signed in, and a sign-out forgets it", () => {
+    writeErpAccessHint(true);
+    expect(readErpAccessHint()).toBe(false); // not signed in
+    writeSessionHint(true);
+    writeErpAccessHint(true);
+    expect(readErpAccessHint()).toBe(true);
+    writeErpAccessHint(false);
+    expect(readErpAccessHint()).toBe(false);
+    writeErpAccessHint(true);
+    writeSessionHint(false);
+    writeSessionHint(true);
+    expect(readErpAccessHint()).toBe(false);
   });
 });

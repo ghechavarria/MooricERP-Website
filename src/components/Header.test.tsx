@@ -38,7 +38,10 @@ describe("header when signed out", () => {
 });
 
 describe("header when signed in", () => {
-  beforeEach(() => window.localStorage.setItem("mooric.signedIn", "1"));
+  beforeEach(() => {
+    window.localStorage.setItem("mooric.signedIn", "1");
+    window.localStorage.setItem("mooric.erpAccess", "1");
+  });
 
   it("drops Book a demo and Get started for an Account menu", () => {
     renderHeader();
@@ -75,5 +78,18 @@ describe("header when signed in", () => {
     expect(menu.getByRole("link", { name: "Mooric ERP" })).toBeTruthy();
     expect(menu.getByRole("link", { name: "Account Details" }).getAttribute("href")).toBe("/account");
     expect(menu.getByRole("button", { name: "Sign Out" })).toBeTruthy();
+  });
+});
+
+
+describe("Mooric ERP in the Account menu", () => {
+  it("is left out until the account status shows access to the ERP", () => {
+    window.localStorage.setItem("mooric.signedIn", "1");
+    renderHeader();
+    const bar = within(primary());
+    fireEvent.click(bar.getByRole("button", { name: /account/i }));
+    expect(bar.queryByRole("link", { name: "Mooric ERP" })).toBeNull();
+    expect(bar.getByRole("link", { name: "Account Details" })).toBeTruthy();
+    expect(bar.getByRole("button", { name: "Sign Out" })).toBeTruthy();
   });
 });
