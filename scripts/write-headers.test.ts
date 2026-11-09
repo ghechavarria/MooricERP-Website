@@ -15,7 +15,9 @@ describe("write-headers CSP", () => {
     const csp = buildCsp({ ...on, VITE_SIGNUP_ENABLED: "" });
     expect(directive(csp, "connect-src")).toBe("connect-src 'self'");
     expect(directive(csp, "script-src")).toBe("script-src 'self'");
-    expect(directive(csp, "frame-src")).toBe("frame-src 'none'");
+    // the homepage video is the only frame the live site needs
+    expect(directive(csp, "frame-src")).toBe("frame-src https://www.youtube-nocookie.com");
+    expect(directive(csp, "img-src")).toBe("img-src 'self' data: https://i.ytimg.com");
     expect(csp).not.toContain("api.example.test");
     expect(csp).not.toContain("identitytoolkit");
     expect(csp).not.toContain("cloudflare");

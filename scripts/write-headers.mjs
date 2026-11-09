@@ -14,6 +14,10 @@ const GOOGLE_FONTS_CSS = "https://fonts.googleapis.com";
 const GOOGLE_FONTS_FILES = "https://fonts.gstatic.com";
 const FIREBASE_AUTH_API = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"];
 const TURNSTILE = "https://challenges.cloudflare.com";
+// The homepage video: YouTube's privacy-enhanced player, and its thumbnail
+// (shown until someone presses play, so nothing loads from YouTube before then).
+const YOUTUBE_PLAYER = "https://www.youtube-nocookie.com";
+const YOUTUBE_THUMBS = "https://i.ytimg.com";
 
 /** Origin (scheme + host + port) of an https URL, or "" when blank/invalid/not https. */
 export const httpsOrigin = (raw) => {
@@ -50,10 +54,10 @@ export const buildCsp = (env = {}) => {
     // framer-motion and React style props set inline styles; Google Fonts CSS.
     "style-src": ["'self'", "'unsafe-inline'", GOOGLE_FONTS_CSS],
     "font-src": ["'self'", GOOGLE_FONTS_FILES],
-    "img-src": ["'self'", "data:"],
+    "img-src": ["'self'", "data:", YOUTUBE_THUMBS],
     "media-src": ["'self'"],
     "connect-src": ["'self'", ...(enabled ? [erpApi, ...FIREBASE_AUTH_API, authDomain] : [])],
-    "frame-src": enabled ? ["'self'", TURNSTILE, authDomain] : ["'none'"],
+    "frame-src": [YOUTUBE_PLAYER, ...(enabled ? ["'self'", TURNSTILE, authDomain] : [])],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
