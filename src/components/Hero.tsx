@@ -79,7 +79,7 @@ function VideoCover() {
   return (
     <span aria-hidden className="absolute inset-0 block text-left">
       {/* deep blue from the left, fading so the thumbnail shows on the right */}
-      <span className="absolute inset-0 bg-[linear-gradient(100deg,rgba(6,22,48,0.94)_0%,rgba(8,32,68,0.78)_38%,rgba(8,32,68,0.30)_72%,rgba(8,32,68,0.12)_100%)] transition-opacity duration-300 group-hover:opacity-90" />
+      <span className="absolute inset-0 bg-[linear-gradient(100deg,rgba(5,18,40,0.97)_0%,rgba(6,24,52,0.9)_45%,rgba(8,32,68,0.45)_75%,rgba(8,32,68,0.15)_100%)] transition-opacity duration-300 group-hover:opacity-90" />
       <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(0,117,255,0.28),transparent_55%)]" />
       <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[rgba(6,22,48,0.55)] to-transparent" />
 
