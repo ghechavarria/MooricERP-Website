@@ -285,6 +285,17 @@ describe("account sign-in", () => {
     expect(nav.reloadAt).not.toHaveBeenCalled();
   });
 
+  it("shows who is signed in, billing and verification labels, and loan usage", async () => {
+    serve(status({ loans_used: 12, loans_included: 10, verified: false }));
+    renderPage();
+    expect(await screen.findByText("ada@example.test")).toBeTruthy();
+    expect(screen.getByText("Active")).toBeTruthy();
+    expect(screen.getByText("Pending check")).toBeTruthy();
+    const bar = screen.getByRole("progressbar", { name: /included loans used/i });
+    expect(bar.getAttribute("aria-valuenow")).toBe("10");
+    expect(screen.getByText(/2 extra loans this period/i)).toBeTruthy();
+  });
+
   it("after signing out the page confirms it above the sign-in form", async () => {
     fb.currentSession.mockResolvedValue(null);
     renderPage("/account?signed_out=1");

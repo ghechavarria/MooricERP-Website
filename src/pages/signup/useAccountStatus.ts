@@ -10,7 +10,7 @@ export type AccountPhase =
   | { kind: "unavailable" }
   | { kind: "signin" }
   /** Signed in; status may not have arrived yet. */
-  | { kind: "signed_in"; status: AccountStatus | null; error: string };
+  | { kind: "signed_in"; status: AccountStatus | null; error: string; email: string | null };
 
 /**
  * Sign-in gate plus status polling for the account and checkout-return pages.
@@ -30,9 +30,12 @@ export function useAccountStatus(awaitingPayment: boolean) {
         setPhase({ kind: "unavailable" });
         return;
       }
+      let email: string | null = null;
       let signedIn: boolean;
       try {
-        signedIn = (await currentSession()) !== null;
+        const session = await currentSession();
+        signedIn = session !== null;
+        email = session?.email ?? null;
       } catch {
         if (!cancelled) setPhase({ kind: "unavailable" });
         return;
@@ -42,10 +45,10 @@ export function useAccountStatus(awaitingPayment: boolean) {
         setPhase({ kind: "signin" });
         return;
       }
-      setPhase({ kind: "signed_in", status: null, error: "" });
+      setPhase({ kind: "signed_in", status: null, error: "", email });
       poller = pollStatus({
         onUpdate: (status) => {
-          if (!cancelled) setPhase({ kind: "signed_in", status, error: "" });
+          if (!cancelled) setPhase({ kind: "signed_in", status, error: "", email });
         },
         onError: (error: ErpApiError) => {
           if (cancelled) return;
@@ -56,6 +59,7 @@ export function useAccountStatus(awaitingPayment: boolean) {
               kind: "signed_in",
               status: prev.kind === "signed_in" ? prev.status : null,
               error: friendlyError(error),
+              email,
             }));
         },
         isDone: (status) => !isTransitional(status, awaitingPayment),
