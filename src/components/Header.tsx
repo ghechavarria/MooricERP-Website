@@ -196,11 +196,6 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          {SIGNUP_NAV_ENABLED && ERP_URL ? (
-            <a href={ERP_URL} className="nav-link ml-5 shrink-0 min-[1800px]:ml-7">
-              Sign in
-            </a>
-          ) : null}
           {/* With signup on, Get started is the one primary action; Book a demo steps back to secondary. */}
           <button
             type="button"

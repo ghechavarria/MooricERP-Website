@@ -70,7 +70,7 @@ describe("header", () => {
     }
   });
 
-  it("nav on adds Sign in and Get started and keeps Book a demo", async () => {
+  it("nav on adds Get started, keeps Book a demo, and puts Sign in in the mobile menu", async () => {
     const mods = await loadApp({
       VITE_SIGNUP_ENABLED: "true",
       VITE_SIGNUP_NAV_ENABLED: "true",
@@ -83,15 +83,13 @@ describe("header", () => {
     expect(pricing?.textContent).toBe("Pricing");
     expect(desktop.querySelector('a[href="/#contact"]')?.textContent).toBe("Contact");
 
-    const signInDesktop = screen.getAllByRole("link", { name: "Sign in" });
-    expect(signInDesktop).toHaveLength(1);
-    expect(signInDesktop[0].getAttribute("href")).toBe("https://erp.example.test");
+    // Sign in lives in the mobile menu only; the desktop header ends with the two buttons
+    expect(screen.queryAllByRole("link", { name: "Sign in" })).toHaveLength(0);
     expect(screen.getAllByRole("link", { name: "Get started" })[0].getAttribute("href")).toBe("/register");
     const demo = screen.getByRole("button", { name: "Book a demo" });
     const getStarted = screen.getAllByRole("link", { name: "Get started" })[0];
     // one primary action: Get started last and solid, Book a demo outlined before it
     expect(demo.compareDocumentPosition(getStarted) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(signInDesktop[0].compareDocumentPosition(demo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(getStarted.className).toContain("btn-primary-silver");
     expect(demo.className).not.toContain("btn-primary-silver");
 
