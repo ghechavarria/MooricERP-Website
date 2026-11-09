@@ -13,6 +13,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   getMultiFactorResolver,
+  onAuthStateChanged,
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -21,6 +22,7 @@ import {
   type MultiFactorResolver,
   type User,
 } from "firebase/auth";
+import { writeSessionHint } from "./sessionHint";
 
 export class FirebaseUnavailableError extends Error {
   constructor() {
@@ -56,6 +58,9 @@ const getAuthInstance = (): Auth => {
   if (import.meta.env.DEV && emulator) {
     connectAuthEmulator(auth, emulator, { disableWarnings: true });
   }
+  // Keep the header's signed-in marker in step with Firebase (sign in, sign out,
+  // a restored session, or one that ended).
+  onAuthStateChanged(auth, (user) => writeSessionHint(Boolean(user)));
   authInstance = auth;
   return auth;
 };

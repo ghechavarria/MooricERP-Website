@@ -12,6 +12,7 @@ const m = vi.hoisted(() => ({
   getMultiFactorResolver: vi.fn(),
   assertionForSignIn: vi.fn(() => "assertion"),
   signOut: vi.fn(),
+  onAuthStateChanged: vi.fn(),
 }));
 
 vi.mock("firebase/app", () => ({
@@ -27,6 +28,7 @@ vi.mock("firebase/auth", () => ({
   sendEmailVerification: m.sendEmailVerification,
   getMultiFactorResolver: m.getMultiFactorResolver,
   signOut: m.signOut,
+  onAuthStateChanged: m.onAuthStateChanged,
   TotpMultiFactorGenerator: { FACTOR_ID: "totp", assertionForSignIn: m.assertionForSignIn },
 }));
 
@@ -266,5 +268,21 @@ describe("currentSession", () => {
     m.getAuth.mockReturnValue({ authStateReady: vi.fn().mockResolvedValue(undefined), currentUser: null });
     const fb = await load();
     await expect(fb.currentSession()).resolves.toBeNull();
+  });
+});
+
+
+describe("header sign-in marker", () => {
+  it("follows Firebase's sign-in state once auth starts", async () => {
+    configure();
+    window.localStorage.clear();
+    const fb = await load();
+    m.signInWithEmailAndPassword.mockResolvedValue({ user: { uid: "u" } });
+    await fb.signIn("a@b.test", "pw");
+    const listener = m.onAuthStateChanged.mock.calls[0][1] as (u: unknown) => void;
+    listener({ uid: "u" });
+    expect(window.localStorage.getItem("mooric.signedIn")).toBe("1");
+    listener(null);
+    expect(window.localStorage.getItem("mooric.signedIn")).toBeNull();
   });
 });

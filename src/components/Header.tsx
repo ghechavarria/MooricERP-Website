@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
 import { ERP_URL, ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
+import { useSessionHint } from "../lib/sessionHint";
 
 const HEADER_SECONDARY_BTN =
   "inline-flex items-center justify-center rounded-md border border-organ-200 bg-white font-semibold text-organ-950 transition hover:border-erp hover:text-erp";
@@ -80,6 +81,7 @@ export function Header() {
   const [mobileExploreOpen, setMobileExploreOpen] = useState(false);
   const { pathname, hash } = useLocation();
   const { openContactModal } = useContactModal();
+  const signedIn = useSessionHint();
 
   useEffect(() => {
     setExploreOpen(false);
@@ -206,10 +208,10 @@ export function Header() {
           </button>
           {SIGNUP_NAV_ENABLED ? (
             <Link
-              to={ROUTES.register}
+              to={signedIn ? ROUTES.account : ROUTES.register}
               className="btn-primary-silver ml-2 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-3 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm"
             >
-              Get started
+              {signedIn ? "Account" : "Get started"}
             </Link>
           ) : null}
         </div>
@@ -304,11 +306,11 @@ export function Header() {
                 ) : null}
                 {SIGNUP_NAV_ENABLED ? (
                   <Link
-                    to={ROUTES.register}
+                    to={signedIn ? ROUTES.account : ROUTES.register}
                     className="btn-primary-silver mt-3 block w-full px-3 py-3.5 text-center text-base font-semibold"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Get started
+                    {signedIn ? "Account" : "Get started"}
                   </Link>
                 ) : null}
                 <button
