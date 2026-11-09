@@ -16,7 +16,7 @@ const TRANSIENT = ["checking", "signed_in"] as const;
 
 const BILLING: Record<string, { label: string; tone: Tone }> = {
   active: { label: "Active", tone: "ok" },
-  past_due: { label: "Past due", tone: "warn" },
+  past_due: { label: "Payment past due", tone: "warn" },
   canceling: { label: "Canceling", tone: "warn" },
   canceled: { label: "Canceled", tone: "muted" },
 };
@@ -91,7 +91,7 @@ function ExtraLoansTile({ used, included, overageCents }: { used: number; includ
 function Details({ status, overageCents }: { status: AccountStatus; overageCents: number | null }) {
   if (status.billing_status === null) return null;
   const known = BILLING[status.billing_status] ?? { label: status.billing_status, tone: "muted" as Tone };
-  const ends = status.billing_status === "canceling" ? formatShortDate(status.ends_at) : "";
+  const ends = status.billing_status === "canceling" ? formatShortDate(status.ends_at, status.timezone) : "";
   const billing = ends ? { ...known, label: `Ends ${ends}` } : known;
   return (
     <dl className="m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -100,7 +100,7 @@ function Details({ status, overageCents }: { status: AccountStatus; overageCents
         <Pill tone={billing.tone}>{billing.label}</Pill>
       </Tile>
       <Tile label="Business details">
-        <Pill tone={status.verified ? "ok" : "info"}>{status.verified ? "Verified" : "Pending check"}</Pill>
+        <Pill tone={status.verified ? "ok" : "info"}>{status.verified ? "NMLS verified" : "Pending NMLS check"}</Pill>
       </Tile>
       {status.loans_included !== null ? (
         <>

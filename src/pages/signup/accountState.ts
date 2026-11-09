@@ -55,7 +55,7 @@ const view = (
  */
 export const describeAccount = (status: AccountStatus): AccountView => {
   const reason = status.suspended_reason;
-  const cutoff = formatDate(status.access_cutoff_at);
+  const cutoff = formatDate(status.access_cutoff_at, status.timezone);
 
   if (status.state === "none") {
     return view("none", "info", "No subscription yet", "You have not signed up yet. Create your account to get started.");
@@ -102,7 +102,7 @@ export const describeAccount = (status: AccountStatus): AccountView => {
     );
   }
   if (status.billing_status === "canceling") {
-    const ends = formatDate(status.ends_at ?? null);
+    const ends = formatDate(status.ends_at, status.timezone);
     return view(
       "canceling",
       "warn",

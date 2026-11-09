@@ -112,9 +112,9 @@ describe("account states", () => {
   });
 
   it("a scheduled cancel shows when access ends, in the message and the Billing tile", async () => {
-    serve(status({ billing_status: "canceling", ends_at: "2026-12-09T00:00:00+00:00" }));
+    serve(status({ billing_status: "canceling", ends_at: "2026-12-09T08:48:11+00:00", timezone: "America/New_York" }));
     renderPage();
-    expect(await screen.findByText(/keep full access until December 9, 2026/)).toBeTruthy();
+    expect(await screen.findByText(/keep full access until December 9, 2026 \(EST\)/)).toBeTruthy();
     expect(screen.getByText("Ends Dec 9, 2026")).toBeTruthy();
     expect(screen.getByText(/won't be charged again/)).toBeTruthy();
   });
@@ -300,7 +300,7 @@ describe("account sign-in", () => {
     expect(await screen.findByText("ada@example.test")).toBeTruthy();
     expect(screen.getByText("12 of 10 loans used")).toBeTruthy();
     expect(screen.getByText("Active")).toBeTruthy();
-    expect(screen.getByText("Pending check")).toBeTruthy();
+    expect(screen.getByText("Pending NMLS check")).toBeTruthy();
     const bar = screen.getByRole("progressbar", { name: /included loans used/i });
     expect(bar.getAttribute("aria-valuenow")).toBe("10");
     expect(screen.getByText("2 extra loans")).toBeTruthy();

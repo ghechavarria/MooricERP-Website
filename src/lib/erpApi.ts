@@ -50,6 +50,8 @@ export type AccountStatus = {
   loans_included: number | null;
   erp_url: string | null;
   support_email: string;
+  /** The Stripe account's time zone (IANA name), for showing dates. Missing from older ERPs. */
+  timezone?: string;
 };
 
 export class ErpApiError extends Error {
