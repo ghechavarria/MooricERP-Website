@@ -62,7 +62,7 @@ describe("hero carousel", () => {
     expect(slide(1).className).toContain("pointer-events-auto");
     expect(slide(2).className).not.toContain("pointer-events-auto");
     const controls = screen.getByRole("button", { name: "Next slide" }).parentElement as HTMLElement;
-    expect(controls.className).toMatch(/relative.*z-10/);
+    expect(controls.className.split(" ")).toEqual(expect.arrayContaining(["relative", "z-10"]));
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
     expect(slide(2).className).toContain("pointer-events-auto");
     expect(slide(1).className).not.toContain("pointer-events-auto");
