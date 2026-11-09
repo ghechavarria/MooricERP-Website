@@ -40,10 +40,12 @@ function YouTubeIcon() {
 export function Footer() {
   return (
     <footer className="border-t border-[#e4ebf4] bg-white">
-      <div className="layout-shell flex flex-col items-center justify-between gap-8 py-[1.8rem] sm:flex-row">
+      {/* Stacked and tight on phones; from md, three columns with the
+          icons and legal links centred between the logo and the copyright. */}
+      <div className="layout-shell flex flex-col items-center gap-4 py-6 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6 md:py-[1.8rem]">
         <Link
           to="/#top"
-          className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl py-1 pl-1 pr-2"
+          className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl py-1 pl-1 pr-2 md:justify-self-start"
         >
           <span
             className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[10px]"
@@ -60,7 +62,7 @@ export function Footer() {
           </span>
           <span className="pointer-events-none h-8 w-px shrink-0 bg-organ-200" aria-hidden />
           <span className="flex min-w-0 flex-col items-start gap-1">
-            <span className="font-display text-[1.0625rem] font-extrabold uppercase leading-none tracking-[0.04em]">
+            <span className="font-display whitespace-nowrap text-[1.0625rem] font-extrabold uppercase leading-none tracking-[0.04em]">
               <span className="text-organ-950">Mooric </span>
               <span className="text-erp">ERP</span>
             </span>
@@ -69,37 +71,39 @@ export function Footer() {
             </span>
           </span>
         </Link>
-        <div className="flex items-center gap-2.5">
-          <a
-            href="https://www.linkedin.com/company/mooricerp"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Mooric ERP on LinkedIn"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
-          >
-            <LinkedInIcon />
-          </a>
-          <a
-            href="https://www.youtube.com/@MooricERP"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Mooric Corporation on YouTube"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
-          >
-            <YouTubeIcon />
-          </a>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <a
+              href="https://www.linkedin.com/company/mooricerp"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mooric ERP on LinkedIn"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
+            >
+              <LinkedInIcon />
+            </a>
+            <a
+              href="https://www.youtube.com/@MooricERP"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mooric Corporation on YouTube"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
+            >
+              <YouTubeIcon />
+            </a>
+          </div>
+          {SIGNUP_NAV_ENABLED ? (
+            <nav aria-label="Legal" className="flex items-center gap-5 whitespace-nowrap text-[13px]">
+              <Link to={ROUTES.terms} className="text-[#5c6b80] transition hover:text-erp">
+                Terms of Use
+              </Link>
+              <Link to={ROUTES.privacy} className="text-[#5c6b80] transition hover:text-erp">
+                Privacy Policy
+              </Link>
+            </nav>
+          ) : null}
         </div>
-        {SIGNUP_NAV_ENABLED ? (
-          <nav aria-label="Legal" className="flex items-center gap-5 text-[13px]">
-            <Link to={ROUTES.terms} className="text-[#5c6b80] transition hover:text-erp">
-              Terms of Use
-            </Link>
-            <Link to={ROUTES.privacy} className="text-[#5c6b80] transition hover:text-erp">
-              Privacy Policy
-            </Link>
-          </nav>
-        ) : null}
-        <p className="font-mono text-xs text-[#5c6b80]">© {new Date().getFullYear()} Mooric ERP</p>
+        <p className="m-0 whitespace-nowrap font-mono text-xs text-[#5c6b80] md:justify-self-end">© {new Date().getFullYear()} Mooric ERP</p>
       </div>
     </footer>
   );
