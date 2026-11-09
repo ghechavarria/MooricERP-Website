@@ -163,7 +163,10 @@ export function Hero() {
           onPointerCancel={() => (dragStart.current = null)}
         >
           <div
-            className="flex items-start transition-transform duration-500 ease-out motion-reduce:transition-none"
+            // The transformed strip paints above later content, and its invisible
+            // part (as tall as the tallest slide) would sit over the controls, so
+            // only the visible slide takes clicks.
+            className="pointer-events-none flex items-start transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ gap: SLIDE_GAP, transform: `translateX(calc(-${index} * (100% + ${SLIDE_GAP})))` }}
           >
             {SLIDES.map((name, i) => (
@@ -177,7 +180,7 @@ export function Hero() {
                 aria-label={`${i + 1} of ${SLIDES.length}: ${name}`}
                 aria-hidden={i !== index}
                 inert={i !== index}
-                className="w-full min-w-0 shrink-0"
+                className={`w-full min-w-0 shrink-0${i === index ? " pointer-events-auto" : ""}`}
               >
                 {i === 0 ? <OverviewSlide /> : <VideoSlide active={index === i} />}
               </div>
@@ -185,7 +188,7 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="v4-rail mt-8 flex items-center justify-center gap-4 sm:mt-10" aria-label="Choose a slide">
+        <div className="v4-rail relative z-10 mt-8 flex items-center justify-center gap-4 sm:mt-10" aria-label="Choose a slide">
           <button
             type="button"
             onClick={() => go(index - 1)}

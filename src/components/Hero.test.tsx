@@ -55,6 +55,19 @@ describe("hero carousel", () => {
     expect(document.querySelector("iframe")).toBeNull();
   });
 
+  it("only the visible slide takes clicks, and the controls sit above the slide strip", () => {
+    renderHero();
+    const strip = slide(1).parentElement as HTMLElement;
+    expect(strip.className).toContain("pointer-events-none");
+    expect(slide(1).className).toContain("pointer-events-auto");
+    expect(slide(2).className).not.toContain("pointer-events-auto");
+    const controls = screen.getByRole("button", { name: "Next slide" }).parentElement as HTMLElement;
+    expect(controls.className).toMatch(/relative.*z-10/);
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(slide(2).className).toContain("pointer-events-auto");
+    expect(slide(1).className).not.toContain("pointer-events-auto");
+  });
+
   it("is the BI5DlHQgo5w video", () => {
     expect(HERO_YOUTUBE_ID).toBe("BI5DlHQgo5w");
   });
