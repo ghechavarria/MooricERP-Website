@@ -4,6 +4,7 @@ import CheckoutReturnPage from "./CheckoutReturnPage";
 import { describeAccount } from "./signup/accountState";
 import { AccountGate } from "./signup/AccountGate";
 import { Alert, Card, ghostButton, Notice, PageShell, primaryButton } from "./signup/Layout";
+import { SIGNED_OUT_PARAM } from "./signup/signOut";
 import { ContinueToPayment, ErpSignInLink, PortalButton, StatusHeading, SupportLine } from "./signup/StatusParts";
 import { useAccountStatus } from "./signup/useAccountStatus";
 import { useFocusHeading } from "./signup/useFocusHeading";
@@ -42,6 +43,8 @@ function Details({ status }: { status: AccountStatus }) {
 
 function AccountDashboard() {
   useNoindex();
+  const [params] = useSearchParams();
+  const signedOut = params.get(SIGNED_OUT_PARAM) === "1";
   const { phase, restart, signOut } = useAccountStatus(false);
   const status = phase.kind === "signed_in" ? phase.status : null;
   const view = status ? describeAccount(status) : null;
@@ -54,6 +57,11 @@ function AccountDashboard() {
       title="Your account"
       lead="Your subscription, billing and set-up status."
     >
+      {signedOut && phase.kind === "signin" ? (
+        <div className="mb-5 max-w-[28rem]">
+          <Notice>You're signed out.</Notice>
+        </div>
+      ) : null}
       <AccountGate phase={phase} onSignedIn={restart} signInHeading="Sign in to your account" />
       {phase.kind === "signed_in" ? (
         <div ref={stepRef} className="grid max-w-[40rem] gap-5" aria-live="polite">

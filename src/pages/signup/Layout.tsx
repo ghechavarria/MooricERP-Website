@@ -14,27 +14,32 @@ export const ghostButton = `v4-btn v4-btn--ghost disabled:cursor-not-allowed dis
 
 export const linkClass = "font-semibold text-erp-600 underline underline-offset-2 hover:text-erp-700";
 
-/** Page frame shared by the signup pages: one rail, a kicker, an h1, an optional lead. */
+/**
+ * Page frame shared by the signup pages: one rail, a kicker, an h1, an optional lead.
+ * `centered` centres the heading block and the content column.
+ */
 export function PageShell({
   testId,
   kicker,
   title,
   lead,
+  centered = false,
   children,
 }: {
   testId: string;
   kicker: string;
   title: string;
   lead?: string;
+  centered?: boolean;
   children?: ReactNode;
 }) {
   return (
     <section data-testid={testId} className="layout-shell py-12 sm:py-16">
-      <div className="v4-rail min-w-0">
+      <div className={`v4-rail min-w-0${centered ? " text-center" : ""}`}>
         <p className="v4-kicker">{kicker}</p>
-        <h1 className="v4-h2 break-words">{title}</h1>
-        {lead ? <p className="v4-lead">{lead}</p> : null}
-        <div className="mt-8 min-w-0 sm:mt-10">{children}</div>
+        <h1 className={`v4-h2 break-words${centered ? " mx-auto" : ""}`}>{title}</h1>
+        {lead ? <p className={`v4-lead${centered ? " mx-auto" : ""}`}>{lead}</p> : null}
+        <div className={`mt-8 min-w-0 sm:mt-10${centered ? " text-left" : ""}`}>{children}</div>
       </div>
     </section>
   );

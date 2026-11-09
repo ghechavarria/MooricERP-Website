@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { ErpApiError, pollStatus, type AccountStatus } from "../../lib/erpApi";
-import { currentSession, firebaseAvailable, signOut } from "../../lib/firebase";
+import { currentSession, firebaseAvailable } from "../../lib/firebase";
 import { friendlyError } from "./errors";
 import { isTransitional } from "./accountState";
+import { signOutCompletely } from "./signOut";
 
 export type AccountPhase =
   | { kind: "checking" }
@@ -74,13 +75,10 @@ export function useAccountStatus(awaitingPayment: boolean) {
     setAttempt((n) => n + 1);
   }, []);
 
+  /** Signs out of Firebase and reloads the page; on failure, says so and stays signed in. */
   const leave = useCallback(async () => {
-    try {
-      await signOut();
-    } finally {
-      setPhase({ kind: "checking" });
-      setAttempt((n) => n + 1);
-    }
+    const problem = await signOutCompletely();
+    if (problem) setPhase((prev) => (prev.kind === "signed_in" ? { ...prev, error: problem } : prev));
   }, []);
 
   return { phase, restart, signOut: leave };

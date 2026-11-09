@@ -13,7 +13,7 @@ const fb = vi.hoisted(() => ({
   refreshVerification: vi.fn(),
   signOut: vi.fn(),
 }));
-const nav = vi.hoisted(() => ({ redirectTo: vi.fn() }));
+const nav = vi.hoisted(() => ({ redirectTo: vi.fn(), reloadAt: vi.fn() }));
 
 vi.mock("../lib/erpApi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../lib/erpApi")>()),
@@ -53,12 +53,20 @@ const renderPage = (path = "/register") =>
 const type = (label: RegExp | string, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
-const fillForm = async (over: { nmls?: string; terms?: boolean } = {}) => {
+const PASSWORD = "Correct-Horse-12";
+
+/** The page opens on sign-in; this switches to the create-account form. */
+const openCreate = async () => {
+  fireEvent.click(await screen.findByRole("button", { name: /create an account/i }));
   await screen.findByLabelText(/^first name/i);
+};
+
+const fillForm = async (over: { nmls?: string; terms?: boolean; password?: string } = {}) => {
+  await openCreate();
   type(/^first name/i, "Ada");
   type(/^last name/i, "Lovelace");
   type(/^email/i, "ada@example.test");
-  type(/^password/i, "correct-horse-1");
+  type(/^password/i, over.password ?? PASSWORD);
   type(/nmls id/i, over.nmls ?? "123456");
   if (over.terms !== false) fireEvent.click(screen.getByLabelText(/i agree/i));
 };
@@ -103,7 +111,7 @@ describe("register form", () => {
 
   it("links Terms and Privacy from the plan config", async () => {
     renderPage();
-    await screen.findByLabelText(/^first name/i);
+    await openCreate();
     expect(screen.getByRole("link", { name: /terms of service/i }).getAttribute("href")).toBe("https://t.example.test");
     expect(screen.getByRole("link", { name: /privacy policy/i }).getAttribute("href")).toBe("https://p.example.test");
   });
@@ -113,7 +121,7 @@ describe("register form", () => {
     await fillForm();
     submit();
     expect(await screen.findByRole("heading", { name: /check your email/i })).toBeTruthy();
-    expect(fb.registerUser).toHaveBeenCalledWith("ada@example.test", "correct-horse-1");
+    expect(fb.registerUser).toHaveBeenCalledWith("ada@example.test", PASSWORD);
     expect(api.signup).toHaveBeenCalledWith({
       first_name: "Ada",
       last_name: "Lovelace",
@@ -173,14 +181,16 @@ describe("register form", () => {
     vi.stubEnv("PROD", true);
     vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "site-key");
     renderPage();
-    expect(await screen.findByLabelText(/^first name/i)).toBeTruthy();
+    await openCreate();
+    expect(screen.getByLabelText(/^first name/i)).toBeTruthy();
     document.getElementById("cf-turnstile-script")?.remove();
   });
 
   it("dev build with no Turnstile key still shows the form", async () => {
     vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "");
     renderPage();
-    expect(await screen.findByLabelText(/^first name/i)).toBeTruthy();
+    await openCreate();
+    expect(screen.getByLabelText(/^first name/i)).toBeTruthy();
   });
 
   it("explains an NMLS ID already in use without naming anyone", async () => {
@@ -231,8 +241,8 @@ describe("register form", () => {
       .mockResolvedValueOnce(null)
       .mockResolvedValue({ email: "ada@example.test", emailVerified: true });
     renderPage();
-    await screen.findByLabelText(/^first name/i);
-    fireEvent.click(screen.getByRole("button", { name: /already have an account/i }));
+    // the page opens on sign-in
+    await screen.findByRole("heading", { name: /^sign in$/i });
     type(/^email/i, "ada@example.test");
     type(/^password/i, "pw-pw-pw-pw");
     fireEvent.click(screen.getByRole("button", { name: /^sign in$/i }));
@@ -270,6 +280,85 @@ describe("register form", () => {
     fireEvent.click(screen.getByRole("button", { name: /verified/i }));
     expect((await screen.findByRole("alert")).textContent).toMatch(/confirm your email/i);
     expect(nav.redirectTo).not.toHaveBeenCalled();
+  });
+});
+
+describe("sign in first", () => {
+  it("opens on sign-in, switches to create an account and back", async () => {
+    renderPage();
+    expect(await screen.findByRole("heading", { level: 1, name: /sign in to get started/i })).toBeTruthy();
+    expect(screen.queryByLabelText(/^first name/i)).toBeNull();
+    await openCreate();
+    expect(screen.getByRole("heading", { level: 1, name: /create your account/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^sign in$/i }));
+    expect(await screen.findByRole("heading", { name: /^sign in$/i })).toBeTruthy();
+  });
+
+  it("a cancelled checkout while signed out still opens on sign-in, with the notice", async () => {
+    renderPage("/register?checkout=cancelled");
+    expect(await screen.findByText(/checkout was cancelled/i)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /^sign in$/i })).toBeTruthy();
+  });
+
+  it("a signed-in person can sign out, which reloads /register fresh", async () => {
+    fb.currentSession.mockResolvedValue({ email: "ada@example.test", emailVerified: false });
+    fb.signOut.mockResolvedValue(undefined);
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /^sign out$/i }));
+    await waitFor(() => expect(nav.reloadAt).toHaveBeenCalledWith("/register"));
+    expect(fb.signOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("subscription card", () => {
+  it("shows the plan as a card above the name fields", async () => {
+    renderPage();
+    await openCreate();
+    const card = screen.getByRole("region", { name: /your subscription/i });
+    expect(card.textContent).toMatch(/Launch plan/);
+    expect(card.textContent).toMatch(/\$50/);
+    expect(card.textContent).toMatch(/\+ applicable tax/);
+    expect(card.textContent).toMatch(/10 loans included each month/);
+    expect(card.textContent).toMatch(/\$15 per additional loan/);
+    const first = screen.getByLabelText(/^first name/i);
+    expect(card.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe("password rules", () => {
+  it.each([
+    ["short", "Ab1!short", /at least 12 characters/i],
+    ["no upper case", "correct-horse-12", /upper-case/i],
+    ["no lower case", "CORRECT-HORSE-12", /lower-case/i],
+    ["no number", "Correct-Horse-xx", /a number/i],
+    ["no symbol", "CorrectHorse123", /a symbol/i],
+    ["contains the email name", "Ada-Lovelace-12", /email name/i],
+  ])("refuses a password with %s", async (_why, password, message) => {
+    renderPage();
+    await fillForm({ password });
+    submit();
+    expect((await screen.findByText(message, { selector: "#reg-password-error" })).textContent).toBeTruthy();
+    expect(fb.registerUser).not.toHaveBeenCalled();
+  });
+
+  it("ticks each rule as it is met and can show the password", async () => {
+    renderPage();
+    await openCreate();
+    type(/^password/i, "Correct-Horse-12");
+    const rules = screen.getByRole("list", { name: /rules for your password/i });
+    expect(rules.textContent).not.toMatch(/not yet/);
+    const input = screen.getByLabelText(/^password/i);
+    expect(input.getAttribute("type")).toBe("password");
+    fireEvent.click(screen.getByRole("button", { name: /^show$/i }));
+    expect(input.getAttribute("type")).toBe("text");
+  });
+
+  it("explains Firebase's own password policy error", async () => {
+    fb.registerUser.mockRejectedValue({ code: "auth/password-does-not-meet-requirements" });
+    renderPage();
+    await fillForm();
+    submit();
+    expect((await screen.findByRole("alert")).textContent).toMatch(/stronger password/i);
   });
 });
 
@@ -346,11 +435,11 @@ describe("bot protection", () => {
   it("adds the Cloudflare script once when a site key is set and none is loaded", async () => {
     vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "site-key");
     const { unmount } = renderPage();
-    await screen.findByLabelText(/^first name/i);
+    await openCreate();
     await waitFor(() => expect(scripts()).toHaveLength(1));
     unmount();
     renderPage();
-    await screen.findByLabelText(/^first name/i);
+    await openCreate();
     expect(scripts()).toHaveLength(1);
   });
 

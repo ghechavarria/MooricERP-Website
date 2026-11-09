@@ -2,8 +2,10 @@ import { ErpApiError } from "../../lib/erpApi";
 
 const FIREBASE_MESSAGES: Record<string, string> = {
   "auth/email-already-in-use":
-    'An account with this email already exists. Choose "I already have an account" to sign in.',
+    'An account with this email already exists. Choose "Sign in" to use it.',
   "auth/weak-password": "Choose a stronger password.",
+  "auth/password-does-not-meet-requirements":
+    "Choose a stronger password: at least 12 characters with upper- and lower-case letters, a number and a symbol.",
   "auth/invalid-email": "Enter a valid email address.",
   "auth/invalid-credential": "The email or password is incorrect.",
   "auth/wrong-password": "The email or password is incorrect.",

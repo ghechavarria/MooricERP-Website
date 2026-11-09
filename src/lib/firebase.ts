@@ -101,8 +101,15 @@ export const getIdToken = async (forceRefresh = false): Promise<string | null> =
   return user ? user.getIdToken(forceRefresh) : null;
 };
 
+/**
+ * Ends the Firebase session: clears the signed-in user from memory and from the
+ * browser's saved session (IndexedDB), so a reload or another tab is signed out.
+ * Throws if a user is still signed in afterwards.
+ */
 export const signOut = async (): Promise<void> => {
-  await firebaseSignOut(getAuthInstance());
+  const auth = getAuthInstance();
+  await firebaseSignOut(auth);
+  if (auth.currentUser) throw new Error("Sign-out did not finish. Please try again.");
 };
 
 /**

@@ -10,7 +10,7 @@ const fb = vi.hoisted(() => ({
   completeTotp: vi.fn(),
   signOut: vi.fn(),
 }));
-const nav = vi.hoisted(() => ({ redirectTo: vi.fn() }));
+const nav = vi.hoisted(() => ({ redirectTo: vi.fn(), reloadAt: vi.fn() }));
 
 vi.mock("../lib/erpApi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../lib/erpApi")>()),
@@ -267,14 +267,28 @@ describe("account sign-in", () => {
     expect(await screen.findByText(/not available/i)).toBeTruthy();
   });
 
-  it("signing out returns to the sign-in form", async () => {
+  it("signing out ends the Firebase session and reloads the account page fresh", async () => {
     serve(status());
-    fb.signOut.mockImplementation(async () => {
-      fb.currentSession.mockResolvedValue(null);
-    });
+    fb.signOut.mockResolvedValue(undefined);
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: /sign out/i }));
-    expect(await screen.findByLabelText(/^email/i)).toBeTruthy();
-    expect(fb.signOut).toHaveBeenCalled();
+    await waitFor(() => expect(nav.reloadAt).toHaveBeenCalledWith("/account?signed_out=1"));
+    expect(fb.signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it("a failed sign-out says so and does not reload", async () => {
+    serve(status());
+    fb.signOut.mockRejectedValue(new Error("offline"));
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /sign out/i }));
+    expect((await screen.findByRole("alert")).textContent).toMatch(/couldn't sign you out/i);
+    expect(nav.reloadAt).not.toHaveBeenCalled();
+  });
+
+  it("after signing out the page confirms it above the sign-in form", async () => {
+    fb.currentSession.mockResolvedValue(null);
+    renderPage("/account?signed_out=1");
+    expect(await screen.findByText(/you're signed out/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^email/i)).toBeTruthy();
   });
 });

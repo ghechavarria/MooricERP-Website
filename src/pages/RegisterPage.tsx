@@ -22,7 +22,10 @@ import {
   primaryButton,
   TextField,
 } from "./signup/Layout";
+import { passwordProblem } from "./signup/password";
+import { PasswordField } from "./signup/PasswordField";
 import { redirectTo } from "./signup/redirect";
+import { signOutCompletely } from "./signup/signOut";
 import { SignInForm } from "./signup/SignInForm";
 import { Turnstile } from "./signup/Turnstile";
 import { turnstileReady, turnstileSiteKey } from "./signup/turnstileKey";
@@ -75,7 +78,8 @@ export default function RegisterPage() {
       setConfig(cfg);
       setSession(current);
       if (!current) {
-        setPhase({ kind: "form" });
+        // Sign in first; "Create an account" switches to the form.
+        setPhase({ kind: "signin" });
         return;
       }
       // Someone already signed in: skip steps they have finished.
@@ -104,15 +108,25 @@ export default function RegisterPage() {
     setAttempt((n) => n + 1);
   };
 
+  const heading =
+    phase.kind === "signin"
+      ? {
+          title: "Sign in to get started",
+          lead: "Sign in to pick up where you left off.",
+        }
+      : phase.kind === "form" && !session
+        ? {
+            title: "Create your account",
+            lead: "Get set up in minutes.",
+          }
+        : phase.kind === "paid"
+          ? { title: "You're all set", lead: "Your subscription is in place." }
+          : { title: "Finish signing up", lead: "Almost there." };
+
   return (
-    <PageShell
-      testId="page-register"
-      kicker="Get started"
-      title="Create your account"
-      lead="Set up your account, confirm your email, then pay securely through Stripe."
-    >
-      <div ref={stepRef} className="grid max-w-[34rem] gap-5">
-        {cancelled && ["form", "resume", "verify"].includes(phase.kind) ? (
+    <PageShell testId="page-register" kicker="Get started" title={heading.title} lead={heading.lead} centered>
+      <div ref={stepRef} className="mx-auto grid w-full max-w-[34rem] gap-5">
+        {cancelled && ["signin", "form", "resume", "verify"].includes(phase.kind) ? (
           <Notice>Checkout was cancelled and nothing was charged. You can pick up where you left off.</Notice>
         ) : null}
         {phase.kind === "loading" ? <Notice>Loading…</Notice> : null}
@@ -130,23 +144,33 @@ export default function RegisterPage() {
         {phase.kind === "paid" ? (
           <Card>
             <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold text-[#0a0e14]">You have already signed up</h2>
-            <p className="mb-5 mt-2 text-[15px] leading-6 text-[#48566b]">
+            <p className="mb-4 mt-2 text-[15px] leading-6 text-[#48566b]">
               Your payment is on file. Check your account for the latest status.
             </p>
-            <Link to="/account" className={primaryButton}>
+            {session ? (
+              <div className="mb-5">
+                <SignedInAs email={session.email} />
+              </div>
+            ) : null}
+            <Link to="/account" className={`${primaryButton} w-full`}>
               Go to your account
             </Link>
           </Card>
         ) : null}
         {phase.kind === "signin" && config ? (
           <Card>
-            <h2 tabIndex={-1} className="outline-none m-0 mb-5 text-xl font-bold text-[#0a0e14]">Sign in to continue</h2>
+            <h2 tabIndex={-1} className="outline-none m-0 mb-5 text-xl font-bold text-[#0a0e14]">Sign in</h2>
             <SignInForm onSignedIn={reload} />
-            <p className="mb-0 mt-5">
-              <button type="button" className={`${linkClass} bg-transparent p-0`} onClick={() => setPhase({ kind: "form" })}>
-                Back to create account
+            <div className="mt-6 border-t border-[#e4ebf4] pt-5 text-center">
+              <p className="m-0 text-[15px] text-[#48566b]">New to Mooric ERP?</p>
+              <button
+                type="button"
+                className={`${ghostButton} mt-3 w-full`}
+                onClick={() => setPhase({ kind: "form" })}
+              >
+                Create an account
               </button>
-            </p>
+            </div>
           </Card>
         ) : null}
         {phase.kind === "form" && config ? (
@@ -198,12 +222,57 @@ const startCheckout = async (): Promise<CheckoutResult> => {
   }
 };
 
+/** "Signed in as …" with a Sign out link that ends the session and starts /register fresh. */
+function SignedInAs({ email }: { email: string | null }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const leave = async () => {
+    setBusy(true);
+    setError("");
+    const problem = await signOutCompletely("/register");
+    if (problem) {
+      setError(problem);
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="grid gap-2">
+      <p className="m-0 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[15px] text-[#2b3648]">
+        <span>
+          Signed in as <strong className="break-all">{email ?? "your account"}</strong>
+        </span>
+        <button type="button" className={`${linkClass} bg-transparent p-0 text-[14px]`} onClick={leave} disabled={busy}>
+          {busy ? "Signing out…" : "Sign out"}
+        </button>
+      </p>
+      {error ? <Alert>{error}</Alert> : null}
+    </div>
+  );
+}
+
+/** The subscription being signed up for, as a small card at the top of the form. */
 function PlanSummary({ plan }: { plan: AccountConfig["plan"] }) {
   return (
-    <p className="m-0 text-[15px] leading-6 text-[#48566b]">
-      {plan.name} plan: {formatMoney(plan.price_cents)} per month + applicable tax, with {plan.included_loans} loans
-      included and {formatMoney(plan.overage_cents)} for each additional loan.
-    </p>
+    <section
+      aria-label="Your subscription"
+      className="rounded-xl border border-[#cfe0f7] bg-[#f4f9fc] p-4 sm:p-5"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="min-w-0">
+          <p className="m-0 text-[12px] font-semibold uppercase tracking-[0.14em] text-erp-600">Your subscription</p>
+          <p className="m-0 mt-1 text-lg font-bold text-[#0a0e14]">{plan.name} plan</p>
+        </div>
+        <p className="m-0 text-right">
+          <span className="text-2xl font-bold tracking-tight text-[#0a0e14]">{formatMoney(plan.price_cents)}</span>
+          <span className="text-[14px] text-[#48566b]"> / month</span>
+          <span className="block text-[13px] text-[#5b6a80]">+ applicable tax</span>
+        </p>
+      </div>
+      <ul className="m-0 mt-3 grid list-none gap-1.5 border-t border-[#d9e6f5] p-0 pt-3 text-[14px] text-[#2b3648] sm:grid-cols-2">
+        <li>{plan.included_loans} loans included each month</li>
+        <li>{formatMoney(plan.overage_cents)} per additional loan</li>
+      </ul>
+    </section>
   );
 }
 
@@ -242,9 +311,12 @@ function ResumeCard({
   return (
     <Card>
       <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold text-[#0a0e14]">Welcome back</h2>
-      <p className="mb-5 mt-2 text-[15px] leading-6 text-[#48566b]">
+      <p className="mb-4 mt-2 text-[15px] leading-6 text-[#48566b]">
         Your details are saved. Continue to payment to finish signing up.
       </p>
+      <div className="mb-5">
+        <SignedInAs email={session?.email ?? null} />
+      </div>
       {error ? <Alert>{error}</Alert> : null}
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
         <button type="button" className={primaryButton} onClick={proceed} disabled={busy}>
@@ -322,6 +394,7 @@ function VerifyCard({
         continue to payment.
       </p>
       <div className="mt-5 grid gap-4">
+        {session ? <SignedInAs email={session.email} /> : null}
         {notice ? <Notice>{notice}</Notice> : null}
         {error ? <Alert>{error}</Alert> : null}
         <div className="flex flex-wrap items-center gap-3">
@@ -373,7 +446,8 @@ function DetailsForm({
     if (!last.trim()) found.last = "Enter your last name.";
     if (!session) {
       if (!EMAIL_PATTERN.test(email.trim())) found.email = "Enter a valid email address.";
-      if (password.length < 8) found.password = "Use at least 8 characters.";
+      const weak = passwordProblem(password, email);
+      if (weak) found.password = weak;
     }
     if (!NMLS_PATTERN.test(nmls.trim())) found.nmls = "NMLS ID must be 1 to 12 digits.";
     if (!terms) found.terms = "You need to agree to the Terms of Service and Privacy Policy to continue.";
@@ -443,11 +517,7 @@ function DetailsForm({
     <Card>
       <form ref={formRef} onSubmit={submit} noValidate className="grid gap-5" aria-label="Create your account">
         <PlanSummary plan={config.plan} />
-        {session ? (
-          <p className="m-0 text-[15px] text-[#2b3648]">
-            Signed in as <strong className="break-all">{session.email}</strong>
-          </p>
-        ) : null}
+        {session ? <SignedInAs email={session.email} /> : null}
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField id="reg-first" label="First name" value={first} onChange={setFirst} autoComplete="given-name" error={errors.first} />
           <TextField id="reg-last" label="Last name" value={last} onChange={setLast} autoComplete="family-name" error={errors.last} />
@@ -464,16 +534,7 @@ function DetailsForm({
               inputMode="email"
               error={errors.email}
             />
-            <TextField
-              id="reg-password"
-              label="Password"
-              type="password"
-              value={password}
-              onChange={setPassword}
-              autoComplete="new-password"
-              hint="At least 8 characters."
-              error={errors.password}
-            />
+            <PasswordField value={password} onChange={setPassword} email={email} error={errors.password} />
           </>
         ) : null}
         <TextField
@@ -526,13 +587,14 @@ function DetailsForm({
             )}
           </Alert>
         ) : null}
-        <button type="submit" className={primaryButton} disabled={busy}>
+        <button type="submit" className={`${primaryButton} w-full`} disabled={busy}>
           {busy ? "Working…" : session ? "Save and continue to payment" : "Create account and continue"}
         </button>
         {!session ? (
-          <p className="m-0 text-[15px] text-[#48566b]">
+          <p className="m-0 text-center text-[15px] text-[#48566b]">
+            Already have an account?{" "}
             <button type="button" className={`${linkClass} bg-transparent p-0`} onClick={onSignIn}>
-              I already have an account
+              Sign in
             </button>
           </p>
         ) : null}

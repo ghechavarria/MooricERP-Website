@@ -70,7 +70,7 @@ export function SignInForm({ onSignedIn }: { onSignedIn: () => void }) {
           hint="Open your authenticator app and enter the 6-digit code for Mooric ERP."
         />
         {error ? <Alert>{error}</Alert> : null}
-        <button type="submit" className={primaryButton} disabled={busy}>
+        <button type="submit" className={`${primaryButton} w-full`} disabled={busy}>
           {busy ? "Checking…" : "Verify code"}
         </button>
       </form>
@@ -97,7 +97,7 @@ export function SignInForm({ onSignedIn }: { onSignedIn: () => void }) {
         autoComplete="current-password"
       />
       {error ? <Alert>{error}</Alert> : null}
-      <button type="submit" className={primaryButton} disabled={busy}>
+      <button type="submit" className={`${primaryButton} w-full`} disabled={busy}>
         {busy ? "Signing in…" : "Sign in"}
       </button>
     </form>

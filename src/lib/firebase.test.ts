@@ -189,6 +189,26 @@ describe("account actions", () => {
     expect(m.sendEmailVerification).toHaveBeenCalledWith(user);
   });
 
+  it("signOut ends the Firebase session", async () => {
+    configure();
+    const auth: Record<string, unknown> = { currentUser: { uid: "u" } };
+    m.getAuth.mockReturnValue(auth);
+    m.signOut.mockImplementation(async () => {
+      auth.currentUser = null;
+    });
+    const fb = await load();
+    await fb.signOut();
+    expect(m.signOut).toHaveBeenCalledWith(auth);
+  });
+
+  it("signOut fails loudly if a user is still signed in afterwards", async () => {
+    configure();
+    m.getAuth.mockReturnValue({ currentUser: { uid: "u" } });
+    m.signOut.mockResolvedValue(undefined);
+    const fb = await load();
+    await expect(fb.signOut()).rejects.toThrow(/did not finish/i);
+  });
+
   it("sendVerification needs a signed-in user and getIdToken is null without one", async () => {
     configure();
     const fb = await load();

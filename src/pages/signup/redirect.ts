@@ -26,3 +26,13 @@ export const redirectTo = (url: string): void => {
   if (!safe) throw new Error("The server sent an invalid link.");
   window.location.assign(safe);
 };
+
+/**
+ * Full page load of one of our own paths, replacing the current history entry.
+ * Used after sign-out so no page state from the old session survives in memory
+ * and Back does not return to the signed-in page.
+ */
+export const reloadAt = (path: string): void => {
+  if (!path.startsWith("/") || path.startsWith("//")) throw new Error("Not a site path.");
+  window.location.replace(path);
+};

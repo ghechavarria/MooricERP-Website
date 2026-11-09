@@ -11,17 +11,26 @@ Only these pages import `src/lib/firebase.ts` and `src/lib/erpApi.ts`, and all f
 | Route | File | What it does |
 |-------|------|--------------|
 | `/pricing` | `PricingPage.tsx` | `GET /config`. Shows the plan name, price from `price_cents` as "$X per month + applicable tax", included loans, and the overage per loan. Nothing is hardcoded; the amount is formatted from plan data. |
-| `/register` | `RegisterPage.tsx` | First and last name, email, password, NMLS ID (digits, 1 to 12), Terms and Privacy checkbox (links from `/config`), Turnstile. |
+| `/register` | `RegisterPage.tsx` | Opens on sign-in, centred. "Create an account" switches to the form: a subscription card (plan, price, included loans, overage), first and last name, email, password (rules below), NMLS ID (digits, 1 to 12), Terms and Privacy checkbox (links from `/config`), Turnstile. |
 | `/account` | `AccountPage.tsx` | Sign-in (with authenticator-app challenge) then status. |
 | `/account?checkout=success` | `CheckoutReturnPage.tsx` | Post-payment page. Also routed at `/checkout/return`. |
 
 ### Register flow
 
 1. Load `/config` and any saved Firebase session. Not available if Firebase is not configured, the API says `not_available` or `signup_available` is false, or `/config` has no `terms_version`.
-2. New person: create the Firebase account, `POST /signup` (with `terms_version` from `/config` and the Turnstile token), send the verification email, show "Check your email".
-3. "I've verified my email" calls `refreshVerification()`; only when true does it call `POST /checkout` and redirect to Stripe. "Resend email" sends another.
-4. Returning person: "I already have an account" signs in (TOTP if enrolled). Then `GET /status` decides: already paid goes to `/account`; `started` shows "Welcome back" with Continue to payment; otherwise the details form without email and password.
-5. `/register?checkout=cancelled` (Stripe's cancel URL) shows a banner and the same resume step.
+2. Nobody signed in: the page opens on "Sign in to get started" (TOTP if enrolled). After sign-in, `GET /status` decides: already paid shows "You're all set" with a link to `/account`; `started` shows "Welcome back" with Continue to payment; otherwise the details form without email and password.
+3. New person: "Create an account" opens the form ("Already have an account? Sign in" goes back). Submitting creates the Firebase account, calls `POST /signup` (with `terms_version` from `/config` and the Turnstile token), sends the verification email, and shows "Check your email".
+4. "I've verified my email" calls `refreshVerification()`; only when true does it call `POST /checkout` and redirect to Stripe. "Resend email" sends another.
+5. `/register?checkout=cancelled` (Stripe's cancel URL) shows a banner above whichever step applies.
+6. Every signed-in step shows "Signed in as …" with **Sign out** (see Sign-out below).
+
+### Password rules
+
+`src/pages/signup/password.ts`: at least 12 characters (at most 128), an upper-case letter, a lower-case letter, a number, a symbol, and not containing the part of the email before the `@`. The field has Show/Hide and a live checklist. These rules are only checked in the browser, so **set the same policy in Firebase** to enforce them on the server: Firebase console → Authentication → Settings → Password policy → Require enforcement, minimum length 12, and require upper case, lower case, numeric and non-alphanumeric characters. Firebase's `auth/password-does-not-meet-requirements` error has friendly copy.
+
+### Sign-out
+
+`signOutCompletely` (`src/pages/signup/signOut.ts`) calls Firebase `signOut`, which clears the user from memory and from the browser's saved session (IndexedDB), and fails if a user is still signed in afterwards. It then does a full page load (`reloadAt`, which replaces the history entry) so no page state from the old session stays in memory and Back doesn't return to it. The account page reloads to `/account?signed_out=1`, which says "You're signed out." above the sign-in form; the register page reloads to `/register`. If Firebase can't sign out, the page says so and nothing reloads. This signs out of the website only; the ERP app keeps its own session on its own domain.
 
 Error handling: `account_exists` links to ERP sign-in (`VITE_ERP_URL`); `signup_locked`, `nmls_in_use`, `rate_limited`, `bot_check_failed`, `email_not_verified`, `billing_unavailable` and the common Firebase codes have friendly copy (`src/pages/signup/errors.ts`). Field errors are tied to inputs with `aria-invalid` and `aria-describedby`, and focus moves to the first invalid field.
 
