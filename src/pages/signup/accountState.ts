@@ -102,11 +102,14 @@ export const describeAccount = (status: AccountStatus): AccountView => {
     );
   }
   if (status.billing_status === "canceling") {
+    const ends = formatDate(status.ends_at ?? null);
     return view(
       "canceling",
       "warn",
-      "Cancellation is scheduled",
-      "Your subscription ends when the current billing period does. Your account stays active until then.",
+      "You've canceled your subscription",
+      `${
+        ends ? `You keep full access until ${ends}` : "You keep full access until the end of the current billing period"
+      }, and you won't be charged again. Changed your mind? Renew it from Manage billing.`,
       true,
     );
   }

@@ -5,7 +5,7 @@ import CheckoutReturnPage from "./CheckoutReturnPage";
 import { describeAccount } from "./signup/accountState";
 import { AccountGate } from "./signup/AccountGate";
 import { Alert, Card, ghostButton, Notice, PageShell, primaryButton } from "./signup/Layout";
-import { formatMoney } from "./signup/format";
+import { formatMoney, formatShortDate } from "./signup/format";
 import { SIGNED_OUT_PARAM } from "./signup/signOut";
 import { ContinueToPayment, ErpSignInLink, PortalButton, StatusHeading, SupportLine } from "./signup/StatusParts";
 import { useAccountStatus } from "./signup/useAccountStatus";
@@ -90,7 +90,9 @@ function ExtraLoansTile({ used, included, overageCents }: { used: number; includ
 
 function Details({ status, overageCents }: { status: AccountStatus; overageCents: number | null }) {
   if (status.billing_status === null) return null;
-  const billing = BILLING[status.billing_status] ?? { label: status.billing_status, tone: "muted" as Tone };
+  const known = BILLING[status.billing_status] ?? { label: status.billing_status, tone: "muted" as Tone };
+  const ends = status.billing_status === "canceling" ? formatShortDate(status.ends_at) : "";
+  const billing = ends ? { ...known, label: `Ends ${ends}` } : known;
   return (
     <dl className="m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <Tile label="Plan">{status.plan ? status.plan.charAt(0).toUpperCase() + status.plan.slice(1) : "-"}</Tile>

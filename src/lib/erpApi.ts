@@ -44,6 +44,8 @@ export type AccountStatus = {
   verified: boolean;
   suspended_reason: string | null;
   access_cutoff_at: string | null;
+  /** When a scheduled cancel takes effect (end of the current period); null otherwise. */
+  ends_at?: string | null;
   loans_used: number;
   loans_included: number | null;
   erp_url: string | null;

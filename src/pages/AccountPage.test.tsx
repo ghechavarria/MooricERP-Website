@@ -101,7 +101,7 @@ describe("account states", () => {
       { org_status: "suspended", suspended_reason: null, erp_url: null },
       /suspended because of a payment problem/i,
     ],
-    ["canceling", { billing_status: "canceling" }, /cancel(l)?ation is scheduled|set to cancel/i],
+    ["canceling", { billing_status: "canceling" }, /you've canceled your subscription/i],
     ["canceled", { suspended_reason: "canceled", billing_status: "canceled", erp_url: null }, /subscription (has been )?canceled/i],
   ];
 
@@ -109,6 +109,14 @@ describe("account states", () => {
     serve(status(over));
     renderPage();
     expect(await screen.findByText(text)).toBeTruthy();
+  });
+
+  it("a scheduled cancel shows when access ends, in the message and the Billing tile", async () => {
+    serve(status({ billing_status: "canceling", ends_at: "2026-12-09T00:00:00+00:00" }));
+    renderPage();
+    expect(await screen.findByText(/keep full access until December 9, 2026/)).toBeTruthy();
+    expect(screen.getByText("Ends Dec 9, 2026")).toBeTruthy();
+    expect(screen.getByText(/won't be charged again/)).toBeTruthy();
   });
 
   it("shows the cutoff date for a payment problem", async () => {
