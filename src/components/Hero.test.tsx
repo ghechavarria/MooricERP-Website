@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Hero, HERO_YOUTUBE_ID } from "./Hero";
+import { Hero, HERO_STACKED_QUERY, HERO_YOUTUBE_ID } from "./Hero";
 import { ContactModalProvider } from "../context/ContactModalContext";
 import { MemoryRouter } from "react-router-dom";
 
@@ -16,6 +16,8 @@ const renderHero = () =>
 // By attribute: an inert slide is left out of role queries.
 const slide = (n: 1 | 2) => document.querySelector(`[aria-roledescription="slide"][aria-label^="${n} of 2"]`) as HTMLElement;
 const current = () => document.querySelector("[aria-current]")?.getAttribute("aria-label");
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("hero carousel", () => {
   it("opens on the overview, with the video slide hidden and inert", () => {
@@ -66,6 +68,32 @@ describe("hero carousel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
     expect(slide(2).className).toContain("pointer-events-auto");
     expect(slide(1).className).not.toContain("pointer-events-auto");
+  });
+
+  it("side by side: the whole hero is the carousel, with the copy on its first slide", () => {
+    renderHero();
+    const carousel = screen.getByRole("region", { name: "Mooric ERP introduction" });
+    expect(slide(1).contains(document.getElementById("hero-heading"))).toBe(true);
+    expect(carousel.contains(slide(2))).toBe(true);
+  });
+
+  it("stacked: the copy stays outside, and only the blue card carousels to the video", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({
+        matches: query === HERO_STACKED_QUERY,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    renderHero();
+    const carousel = screen.getByRole("region", { name: "Mooric ERP videos" });
+    const heading = document.getElementById("hero-heading") as HTMLElement;
+    expect(carousel.contains(heading)).toBe(false);
+    expect(slide(1).textContent).toMatch(/Empowering better closings/);
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(current()).toBe("Show slide 2: Video");
+    expect(heading.isConnected).toBe(true);
   });
 
   it("is the BI5DlHQgo5w video", () => {
