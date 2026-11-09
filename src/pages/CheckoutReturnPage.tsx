@@ -64,10 +64,15 @@ export default function CheckoutReturnPage() {
       kicker="Checkout"
       title="Thanks for signing up"
       lead="Your payment is checked with our payment provider before anything is set up."
+      centered
     >
-      <AccountGate phase={phase} onSignedIn={restart} signInHeading="Sign in to see your order" />
+      {phase.kind !== "signed_in" ? (
+        <div className="mx-auto grid w-full max-w-[28rem] gap-5">
+          <AccountGate phase={phase} onSignedIn={restart} signInHeading="Sign in to see your order" />
+        </div>
+      ) : null}
       {phase.kind === "signed_in" ? (
-        <div className="grid max-w-[40rem] gap-5" aria-live="polite">
+        <div className="mx-auto grid w-full max-w-[40rem] gap-5" aria-live="polite">
           <Card>
             <StatusHeading view={view} />
             <ol className="m-0 mt-6 grid list-none gap-2.5 p-0">
