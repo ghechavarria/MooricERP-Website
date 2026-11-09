@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 const api = vi.hoisted(() => ({ config: vi.fn(), signup: vi.fn(), checkout: vi.fn(), status: vi.fn() }));
 const fb = vi.hoisted(() => ({
@@ -37,7 +37,7 @@ import RegisterPage from "./RegisterPage";
 
 const config = {
   signup_available: true,
-  plan: { code: "launch", name: "Launch", price_cents: 5000, included_loans: 10, overage_cents: 1500 },
+  plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500 },
   terms_url: "https://t.example.test",
   privacy_url: "https://p.example.test",
   terms_version: "2026-11",
@@ -80,7 +80,7 @@ beforeEach(() => {
   fb.registerUser.mockResolvedValue({});
   fb.sendVerification.mockResolvedValue(undefined);
   api.config.mockResolvedValue(config);
-  api.signup.mockResolvedValue({ state: "started", plan: "launch" });
+  api.signup.mockResolvedValue({ state: "started", plan: "monthly" });
   api.checkout.mockResolvedValue({ url: "https://checkout.example.test/s/1" });
   api.status.mockResolvedValue({ state: "none" });
 });
@@ -263,11 +263,18 @@ describe("register form", () => {
     await waitFor(() => expect(nav.redirectTo).toHaveBeenCalledWith("https://checkout.example.test/s/1"));
   });
 
-  it("someone who already paid is pointed to their account", async () => {
+  it("someone who already paid goes straight to their account", async () => {
     fb.currentSession.mockResolvedValue({ email: "ada@example.test", emailVerified: true });
     api.status.mockResolvedValue({ state: "ready" });
-    renderPage();
-    expect((await screen.findByRole("link", { name: /go to your account/i })).getAttribute("href")).toBe("/account");
+    render(
+      <MemoryRouter initialEntries={["/register"]}>
+        <Routes>
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/account" element={<p>Account page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText("Account page")).toBeTruthy();
   });
 
   it("stays on the verify step when checkout says the email is not verified", async () => {
@@ -315,7 +322,7 @@ describe("subscription card", () => {
     renderPage();
     await openCreate();
     const card = screen.getByRole("region", { name: /your subscription/i });
-    expect(card.textContent).toMatch(/Launch plan/);
+    expect(card.textContent).toMatch(/Monthly plan/);
     expect(card.textContent).toMatch(/\$50/);
     expect(card.textContent).toMatch(/\+ applicable tax/);
     expect(card.textContent).toMatch(/10 loans included each month/);

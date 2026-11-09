@@ -31,7 +31,7 @@ import AccountPage from "./AccountPage";
 
 const status = (over: Partial<AccountStatus> = {}): AccountStatus => ({
   state: "ready",
-  plan: "launch",
+  plan: "monthly",
   billing_status: "active",
   verified: true,
   suspended_reason: null,

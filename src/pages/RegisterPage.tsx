@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { ERP_URL } from "../config/signup";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ERP_URL, ROUTES } from "../config/signup";
 import { erpApi, ErpApiError, type AccountConfig } from "../lib/erpApi";
 import {
   currentSession,
@@ -103,6 +103,12 @@ export default function RegisterPage() {
     void load();
   }, [load, attempt]);
 
+  // Someone who has already paid has nothing to do here: go straight to the account page.
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (phase.kind === "paid") navigate(ROUTES.account, { replace: true });
+  }, [phase.kind, navigate]);
+
   const reload = () => {
     setPhase({ kind: "loading" });
     setAttempt((n) => n + 1);
@@ -120,7 +126,7 @@ export default function RegisterPage() {
             lead: "Get set up in minutes.",
           }
         : phase.kind === "paid"
-          ? { title: "You're all set", lead: "Your subscription is in place." }
+          ? { title: "You're all set", lead: "Taking you to your account…" }
           : { title: "Finish signing up", lead: "Almost there." };
 
   return (
@@ -140,22 +146,6 @@ export default function RegisterPage() {
               </button>
             </div>
           </>
-        ) : null}
-        {phase.kind === "paid" ? (
-          <Card>
-            <h2 tabIndex={-1} className="outline-none m-0 text-xl font-bold text-[#0a0e14]">You have already signed up</h2>
-            <p className="mb-4 mt-2 text-[15px] leading-6 text-[#48566b]">
-              Your payment is on file. Check your account for the latest status.
-            </p>
-            {session ? (
-              <div className="mb-5">
-                <SignedInAs email={session.email} />
-              </div>
-            ) : null}
-            <Link to="/account" className={`${primaryButton} w-full`}>
-              Go to your account
-            </Link>
-          </Card>
         ) : null}
         {phase.kind === "signin" && config ? (
           <Card>

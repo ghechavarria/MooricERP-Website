@@ -18,7 +18,7 @@ const fetchMock = vi.fn();
 
 const STATUS: AccountStatus = {
   state: "paid",
-  plan: "launch",
+  plan: "monthly",
   billing_status: "active",
   verified: false,
   suspended_reason: null,
@@ -91,7 +91,7 @@ describe("erpApi requests", () => {
   });
 
   it("signup posts the body as JSON", async () => {
-    fetchMock.mockResolvedValue(json({ state: "started", plan: "launch" }));
+    fetchMock.mockResolvedValue(json({ state: "started", plan: "monthly" }));
     const body = {
       first_name: "A",
       last_name: "B",
@@ -105,7 +105,7 @@ describe("erpApi requests", () => {
     expect(init.method).toBe("POST");
     expect(init.headers["Content-Type"]).toBe("application/json");
     expect(JSON.parse(init.body)).toEqual(body);
-    expect(res).toEqual({ state: "started", plan: "launch" });
+    expect(res).toEqual({ state: "started", plan: "monthly" });
   });
 
   it("checkout and portal return the url", async () => {

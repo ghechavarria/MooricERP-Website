@@ -14,7 +14,7 @@ import PricingPage from "./PricingPage";
 
 const config = (over: Record<string, unknown> = {}) => ({
   signup_available: true,
-  plan: { code: "launch", name: "Launch", price_cents: 5000, included_loans: 10, overage_cents: 1500 },
+  plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500 },
   terms_url: "https://t.example.test",
   privacy_url: "https://p.example.test",
   terms_version: "2026-11",

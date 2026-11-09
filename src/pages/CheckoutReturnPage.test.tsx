@@ -27,7 +27,7 @@ import CheckoutReturnPage from "./CheckoutReturnPage";
 
 const status = (over: Partial<AccountStatus> = {}): AccountStatus => ({
   state: "started",
-  plan: "launch",
+  plan: "monthly",
   billing_status: null,
   verified: false,
   suspended_reason: null,
