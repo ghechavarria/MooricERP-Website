@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ErpApiError, pollStatus, type AccountStatus } from "../../lib/erpApi";
 import { currentSession, firebaseAvailable } from "../../lib/firebase";
-import { writeErpAccessHint } from "../../lib/sessionHint";
 import { friendlyError } from "./errors";
 import { isTransitional } from "./accountState";
 import { signOutCompletely } from "./signOut";
@@ -49,8 +48,6 @@ export function useAccountStatus(awaitingPayment: boolean) {
       setPhase({ kind: "signed_in", status: null, error: "", email });
       poller = pollStatus({
         onUpdate: (status) => {
-          // The header shows "Mooric ERP" only while the server gives the ERP link.
-          writeErpAccessHint(Boolean(status.erp_url));
           if (!cancelled) setPhase({ kind: "signed_in", status, error: "", email });
         },
         onError: (error: ErpApiError) => {

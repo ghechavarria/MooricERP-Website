@@ -38,24 +38,20 @@ describe("header when signed out", () => {
 });
 
 describe("header when signed in", () => {
-  beforeEach(() => {
-    window.localStorage.setItem("mooric.signedIn", "1");
-    window.localStorage.setItem("mooric.erpAccess", "1");
-  });
+  beforeEach(() => window.localStorage.setItem("mooric.signedIn", "1"));
 
-  it("drops Book a demo and Get started for an Account menu", () => {
+  it("drops Book a demo and Get started for an Account menu with Account Details and Sign Out", () => {
     renderHeader();
     const bar = within(primary());
     expect(bar.queryByRole("button", { name: "Book a demo" })).toBeNull();
     expect(bar.queryByRole("link", { name: "Get started" })).toBeNull();
     fireEvent.click(bar.getByRole("button", { name: /account/i }));
-    expect(bar.getByRole("link", { name: "Mooric ERP" }).getAttribute("href")).toBe("https://erp.example.test");
+    expect(bar.queryByRole("link", { name: "Mooric ERP" })).toBeNull();
     expect(bar.getByRole("link", { name: "Account Details" }).getAttribute("href")).toBe("/account");
     expect(bar.getByRole("button", { name: "Sign Out" })).toBeTruthy();
     const panel = bar.getByRole("link", { name: "Account Details" }).parentElement as HTMLElement;
     expect([...panel.children].map((el) => el.textContent?.trim())).toEqual([
       "Account Details",
-      "Mooric ERP",
       "Sign Out",
     ]);
   });
@@ -75,21 +71,8 @@ describe("header when signed in", () => {
     expect(menu.queryByRole("link", { name: "Get started" })).toBeNull();
     expect(menu.queryByRole("button", { name: "Book a demo" })).toBeNull();
     fireEvent.click(menu.getByRole("button", { name: /account/i }));
-    expect(menu.getByRole("link", { name: "Mooric ERP" })).toBeTruthy();
+    expect(menu.queryByRole("link", { name: "Mooric ERP" })).toBeNull();
     expect(menu.getByRole("link", { name: "Account Details" }).getAttribute("href")).toBe("/account");
     expect(menu.getByRole("button", { name: "Sign Out" })).toBeTruthy();
-  });
-});
-
-
-describe("Mooric ERP in the Account menu", () => {
-  it("is left out until the account status shows access to the ERP", () => {
-    window.localStorage.setItem("mooric.signedIn", "1");
-    renderHeader();
-    const bar = within(primary());
-    fireEvent.click(bar.getByRole("button", { name: /account/i }));
-    expect(bar.queryByRole("link", { name: "Mooric ERP" })).toBeNull();
-    expect(bar.getByRole("link", { name: "Account Details" })).toBeTruthy();
-    expect(bar.getByRole("button", { name: "Sign Out" })).toBeTruthy();
   });
 });

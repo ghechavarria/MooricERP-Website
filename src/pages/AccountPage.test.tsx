@@ -111,23 +111,6 @@ describe("account states", () => {
     expect(await screen.findByText(text)).toBeTruthy();
   });
 
-  it("remembers for the header whether the account can open the ERP", async () => {
-    window.localStorage.clear();
-    window.localStorage.setItem("mooric.signedIn", "1");
-    serve(status());
-    renderPage();
-    await screen.findByText(/your account is ready/i);
-    expect(window.localStorage.getItem("mooric.erpAccess")).toBe("1");
-  });
-
-  it("forgets ERP access when the status gives no ERP link", async () => {
-    window.localStorage.setItem("mooric.erpAccess", "1");
-    serve(status({ state: "review", erp_url: null }));
-    renderPage();
-    await screen.findByText(/under review/i);
-    expect(window.localStorage.getItem("mooric.erpAccess")).toBeNull();
-  });
-
   it("a scheduled cancel shows when access ends, in the message and the Billing tile", async () => {
     serve(status({ billing_status: "canceling", ends_at: "2026-12-09T08:48:11+00:00", timezone: "America/New_York" }));
     renderPage();
