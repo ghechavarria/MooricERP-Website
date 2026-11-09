@@ -247,14 +247,14 @@ export function Header() {
                     transform: accountOpen ? "translateY(0)" : "translateY(-6px)",
                   }}
                 >
+                  <Link to={ROUTES.account} onClick={() => setAccountOpen(false)}>
+                    Account Details
+                  </Link>
                   {ERP_URL ? (
                     <a href={ERP_URL} onClick={() => setAccountOpen(false)}>
                       Mooric ERP
                     </a>
                   ) : null}
-                  <Link to={ROUTES.account} onClick={() => setAccountOpen(false)}>
-                    Account Details
-                  </Link>
                   <button
                     type="button"
                     onClick={() => {
@@ -381,14 +381,14 @@ export function Header() {
                     </button>
                     {mobileAccountOpen ? (
                       <>
+                        <Link to={ROUTES.account} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
+                          Account Details
+                        </Link>
                         {ERP_URL ? (
                           <a href={ERP_URL} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
                             Mooric ERP
                           </a>
                         ) : null}
-                        <Link to={ROUTES.account} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
-                          Account Details
-                        </Link>
                         <button
                           type="button"
                           className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp text-left"

@@ -49,6 +49,12 @@ describe("header when signed in", () => {
     expect(bar.getByRole("link", { name: "Mooric ERP" }).getAttribute("href")).toBe("https://erp.example.test");
     expect(bar.getByRole("link", { name: "Account Details" }).getAttribute("href")).toBe("/account");
     expect(bar.getByRole("button", { name: "Sign Out" })).toBeTruthy();
+    const panel = bar.getByRole("link", { name: "Account Details" }).parentElement as HTMLElement;
+    expect([...panel.children].map((el) => el.textContent?.trim())).toEqual([
+      "Account Details",
+      "Mooric ERP",
+      "Sign Out",
+    ]);
   });
 
   it("Sign Out signs out completely", async () => {
