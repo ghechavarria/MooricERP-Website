@@ -19,6 +19,9 @@ export const HERO_YOUTUBE_ID = "BI5DlHQgo5w";
 export const HERO_STACKED_QUERY = "(max-width: 1099px)";
 
 const SWIPE_PX = 50;
+/** How long each slide stays before the carousel moves on. */
+const WIDE_SLIDE_MS = 10_000;
+const STACKED_SLIDE_MS = 7_000;
 /** Space between slides; larger than the clip margin so a neighbour never peeks in. */
 const SLIDE_GAP = "6rem";
 
@@ -119,13 +122,25 @@ function VideoCover() {
  * nothing loads from YouTube for people who never watch; then it plays in
  * YouTube's privacy-enhanced player. Leaving the slide stops it.
  */
-function YouTubeSlide({ active, height }: { active: boolean; height?: number }) {
+function YouTubeSlide({
+  active,
+  height,
+  onPlayingChange,
+}: {
+  active: boolean;
+  height?: number;
+  onPlayingChange: (playing: boolean) => void;
+}) {
   const [playing, setPlaying] = useState(false);
   const [thumb, setThumb] = useState(`https://i.ytimg.com/vi/${HERO_YOUTUBE_ID}/maxresdefault.jpg`);
 
   useEffect(() => {
     if (!active) setPlaying(false);
   }, [active]);
+
+  useEffect(() => {
+    onPlayingChange(playing);
+  }, [playing, onPlayingChange]);
 
   return (
     <div
@@ -171,22 +186,55 @@ function Arrow({ dir }: { dir: "prev" | "next" }) {
   );
 }
 
-type Slide = { name: string; render: (ctx: { active: boolean; height?: number }) => ReactNode };
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className="h-4 w-4 fill-current">
+      <rect x="6" y="5" width="4" height="14" rx="1" />
+      <rect x="14" y="5" width="4" height="14" rx="1" />
+    </svg>
+  );
+}
+
+type SlideContext = { active: boolean; height?: number; onVideoPlayingChange: (playing: boolean) => void };
+type Slide = { name: string; render: (ctx: SlideContext) => ReactNode };
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * Slides side by side, one visible. The first slide sets the height and every
- * other slide gets it, so the frame never jumps. It never moves on its own:
- * arrows, dots, swipe and Left/Right move it. Hidden slides are inert, and only
- * the visible slide takes clicks (the transformed strip paints above later
- * content, so it must not catch clicks meant for the controls).
+ * other slide gets it, so the frame never jumps. It moves on by itself every
+ * `interval` ms, and arrows, dots, swipe and Left/Right move it too (each move
+ * restarts the clock). Autoplay pauses while a mouse is over it or keyboard
+ * focus is inside it; touch screens get a pause/play button with the controls.
+ * It holds on a slide whose video has been started (paused or not) until the
+ * visitor moves to another slide, which stops the video. It does not start for people
+ * who ask for reduced motion (the button can still start it).
+ * Hidden slides are inert, and only the visible slide takes clicks (the
+ * transformed strip paints above later content, so it must not catch clicks
+ * meant for the controls).
  */
-function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
+function Carousel({ slides, label, interval }: { slides: Slide[]; label: string; interval: number }) {
   const [index, setIndex] = useState(0);
   const [height, setHeight] = useState<number | undefined>(undefined);
+  const [autoplay, setAutoplay] = useState(() => !prefersReducedMotion());
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const firstRef = useRef<HTMLDivElement | null>(null);
   const dragStart = useRef<number | null>(null);
 
   const go = useCallback((next: number) => setIndex((next + slides.length) % slides.length), [slides.length]);
+  const onVideoPlayingChange = useCallback((playing: boolean) => setVideoPlaying(playing), []);
+
+  const running = autoplay && !videoPlaying && !hovered && !focused;
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setTimeout(() => go(index + 1), interval);
+    return () => window.clearTimeout(timer);
+  }, [running, index, interval, go]);
 
   useLayoutEffect(() => {
     const el = firstRef.current;
@@ -216,7 +264,19 @@ function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
   };
 
   return (
-    <div role="region" aria-roledescription="carousel" aria-label={label} onKeyDown={onKeyDown} className="min-w-0">
+    <div
+      role="region"
+      aria-roledescription="carousel"
+      aria-label={label}
+      onKeyDown={onKeyDown}
+      onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(true)}
+      onPointerLeave={(event) => event.pointerType === "mouse" && setHovered(false)}
+      onFocus={(event) => event.target.matches(":focus-visible") && setFocused(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+      }}
+      className="min-w-0"
+    >
       <div
         // Clip sideways only, with room for the cards' shadows.
         className="[overflow-clip-margin:4rem] [overflow-x:clip] [overflow-y:visible]"
@@ -225,6 +285,7 @@ function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
         onPointerCancel={() => (dragStart.current = null)}
       >
         <div
+          aria-live={running ? "off" : "polite"}
           className="pointer-events-none flex items-start transition-transform duration-500 ease-out motion-reduce:transition-none"
           style={{ gap: SLIDE_GAP, transform: `translateX(calc(-${index} * (100% + ${SLIDE_GAP})))` }}
         >
@@ -239,7 +300,7 @@ function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
               inert={i !== index}
               className={`w-full min-w-0 shrink-0${i === index ? " pointer-events-auto" : ""}`}
             >
-              {slide.render({ active: i === index, height: i === 0 ? undefined : height })}
+              {slide.render({ active: i === index, height: i === 0 ? undefined : height, onVideoPlayingChange })}
             </div>
           ))}
         </div>
@@ -266,7 +327,7 @@ function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
             >
               <span
                 aria-hidden
-                className={`block h-2.5 rounded-full transition-all ${i === index ? "w-7 bg-erp" : "w-2.5 bg-[#cfd9e6] hover:bg-[#9fb3cc]"}`}
+                className={`block h-2.5 rounded-full transition-all ${i === index ? `w-7 ${running ? "bg-erp" : "bg-[#99c7ff]"}` : "w-2.5 bg-[#cfd9e6] hover:bg-[#9fb3cc]"}`}
               />
             </button>
           ))}
@@ -279,6 +340,16 @@ function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
         >
           <Arrow dir="next" />
         </button>
+        {/* touch screens only: they cannot hover to pause */}
+        <button
+          type="button"
+          onClick={() => setAutoplay((on) => !on)}
+          disabled={videoPlaying}
+          aria-label={autoplay ? "Pause slideshow" : "Play slideshow"}
+          className="hidden h-11 disabled:cursor-not-allowed disabled:opacity-40 w-11 items-center justify-center rounded-full border border-[#cfd9e6] bg-white text-[#0a0e14] transition hover:border-erp hover:text-erp [@media(hover:none)]:flex"
+        >
+          {autoplay ? <PauseIcon /> : <PlayIcon className="ml-0.5 h-4 w-4 fill-current" />}
+        </button>
       </div>
     </div>
   );
@@ -286,7 +357,9 @@ function Carousel({ slides, label }: { slides: Slide[]; label: string }) {
 
 const youTube: Slide = {
   name: "Video",
-  render: ({ active, height }) => <YouTubeSlide active={active} height={height} />,
+  render: ({ active, height, onVideoPlayingChange }) => (
+    <YouTubeSlide active={active} height={height} onPlayingChange={onVideoPlayingChange} />
+  ),
 };
 
 /**
@@ -307,13 +380,14 @@ export function Hero() {
               <HeroCopy />
             </motion.div>
             <motion.div {...fadeUp(0.08)} className="relative min-w-0">
-              <Carousel label="Mooric ERP videos" slides={[{ name: "Overview", render: () => <HeroVideoCard /> }, youTube]} />
+              <Carousel label="Mooric ERP videos" interval={STACKED_SLIDE_MS} slides={[{ name: "Overview", render: () => <HeroVideoCard /> }, youTube]} />
             </motion.div>
           </div>
         ) : (
           <div className="v4-rail">
             <Carousel
               label="Mooric ERP introduction"
+              interval={WIDE_SLIDE_MS}
               slides={[
                 {
                   name: "Overview",
