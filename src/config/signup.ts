@@ -20,9 +20,14 @@ export const readSignupConfig = (env: SignupEnv) => ({
   ERP_API_URL: text(env.VITE_ERP_API_URL),
 });
 
-export const { SIGNUP_ENABLED, SIGNUP_NAV_ENABLED, ERP_URL, ERP_API_URL } = readSignupConfig(
-  import.meta.env,
-);
+// Each variable is named on its own: passing import.meta.env whole makes Vite copy
+// every VITE_* value into the bundle, including ones this module never reads.
+export const { SIGNUP_ENABLED, SIGNUP_NAV_ENABLED, ERP_URL, ERP_API_URL } = readSignupConfig({
+  VITE_SIGNUP_ENABLED: import.meta.env.VITE_SIGNUP_ENABLED,
+  VITE_SIGNUP_NAV_ENABLED: import.meta.env.VITE_SIGNUP_NAV_ENABLED,
+  VITE_ERP_URL: import.meta.env.VITE_ERP_URL,
+  VITE_ERP_API_URL: import.meta.env.VITE_ERP_API_URL,
+});
 
 export const ROUTES = {
   pricing: "/pricing",

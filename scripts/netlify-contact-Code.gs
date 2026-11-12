@@ -10,6 +10,39 @@ function escapeHtml_(value) {
   return s;
 }
 
+// Sheets runs a cell that starts with one of these as a formula. A leading
+// apostrophe makes Sheets store the value as plain text instead.
+function sheetText_(value) {
+  var s = String(value == null ? "" : value);
+  if (/^[=+\-@\t\r]/.test(s)) {
+    return "'" + s;
+  }
+  return s;
+}
+
+function digest_(value) {
+  return Utilities.base64Encode(
+    Utilities.computeDigest(
+      Utilities.DigestAlgorithm.SHA_256,
+      String(value),
+      Utilities.Charset.UTF_8
+    )
+  );
+}
+
+// The forward-to-sheet Netlify function adds forwardSecret to every request.
+// The same value must be saved in Project Settings > Script Properties as
+// FORWARD_SHARED_SECRET. Without it, every request is refused.
+function hasForwardSecret_(body) {
+  var expected = PropertiesService.getScriptProperties().getProperty(
+    "FORWARD_SHARED_SECRET"
+  );
+  if (!expected || typeof body.forwardSecret != "string") {
+    return false;
+  }
+  return digest_(body.forwardSecret) == digest_(expected);
+}
+
 function jsonResponse_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
     ContentService.MimeType.JSON
@@ -29,6 +62,10 @@ function doPost(e) {
       raw = e.postData.contents;
     }
     var body = JSON.parse(raw);
+    if (!hasForwardSecret_(body)) {
+      lock.releaseLock();
+      return jsonResponse_({ ok: false, error: "unauthorized" });
+    }
     var fields = {};
     if (body.data) {
       fields = body.data;
@@ -68,6 +105,8 @@ function doPost(e) {
         loans;
     }
 
+    // getValues() returns a stored value without its leading apostrophe, so the
+    // duplicate check compares against the raw id.
     var lastRow = sheet.getLastRow();
     if (submissionId != "" && lastRow > 1) {
       var existing = sheet.getRange(2, 8, lastRow, 8).getValues();
@@ -84,13 +123,13 @@ function doPost(e) {
     var receivedAt = new Date();
     sheet.appendRow([
       receivedAt,
-      fullName,
-      email,
-      role,
-      state,
-      loans,
-      message,
-      submissionId
+      sheetText_(fullName),
+      sheetText_(email),
+      sheetText_(role),
+      sheetText_(state),
+      sheetText_(loans),
+      sheetText_(message),
+      sheetText_(submissionId)
     ]);
 
     sendContactEmail_({

@@ -24,7 +24,7 @@ import {
 } from "./signup/Layout";
 import { passwordProblem } from "./signup/password";
 import { PasswordField } from "./signup/PasswordField";
-import { redirectTo } from "./signup/redirect";
+import { redirectTo, safeUrl } from "./signup/redirect";
 import { signOutCompletely } from "./signup/signOut";
 import { SignInForm } from "./signup/SignInForm";
 import { Turnstile } from "./signup/Turnstile";
@@ -71,7 +71,12 @@ export default function RegisterPage() {
     }
     try {
       const [cfg, current] = await Promise.all([erpApi.config(), currentSession()]);
-      if (!cfg.signup_available || !cfg.terms_version || !cfg.terms_url || !cfg.privacy_url) {
+      if (
+        !cfg.signup_available ||
+        !cfg.terms_version ||
+        !safeUrl(cfg.terms_url) ||
+        !safeUrl(cfg.privacy_url)
+      ) {
         setPhase({ kind: "unavailable" });
         return;
       }
@@ -595,9 +600,10 @@ function DetailsForm({
 }
 
 function LegalLink({ href, children }: { href: string; children: string }) {
-  if (!href) return <>{children}</>;
+  const url = safeUrl(href);
+  if (!url) return <>{children}</>;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+    <a href={url} target="_blank" rel="noopener noreferrer" className={linkClass}>
       {children}
     </a>
   );

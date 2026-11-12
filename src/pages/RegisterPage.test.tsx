@@ -414,6 +414,16 @@ describe("register availability", () => {
     expect(await screen.findByText(/not available/i)).toBeTruthy();
   });
 
+  it("not available when the Terms or Privacy link is not https", async () => {
+    api.config.mockResolvedValue({ ...config, terms_url: "javascript:alert(1)" });
+    const { unmount } = renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+    unmount();
+    api.config.mockResolvedValue({ ...config, privacy_url: "http://p.example.test" });
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+  });
+
   it("not available when the plan data has no terms version", async () => {
     api.config.mockResolvedValue({ ...config, terms_version: "" });
     renderPage();

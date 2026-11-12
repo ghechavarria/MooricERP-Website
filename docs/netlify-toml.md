@@ -26,6 +26,7 @@ Static headers are set in `netlify.toml` under `[[headers]]` for `/*`:
 | `X-Content-Type-Options` | `nosniff` | |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | |
 | `X-Frame-Options` | `DENY` | Frame protection (the CSP also carries `frame-ancestors 'none'`). |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=()` | The site uses none of these, so no page or embedded frame (YouTube, Turnstile) can ask for them. Stripe Checkout is a redirect to stripe.com, so `payment=()` does not affect it. |
 
 The Content-Security-Policy cannot live in `netlify.toml`: it depends on environment values (`VITE_ERP_API_URL`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_SIGNUP_ENABLED`), and `netlify.toml` cannot read env vars. Instead [scripts/write-headers.mjs](../scripts/write-headers.mjs) runs after `vite build` (it is part of `npm run build`) and writes `dist/_headers`. Netlify merges that file with the `[[headers]]` block. Only the origin of each URL is used (never a path), and only `https` URLs are accepted. Tests: `scripts/write-headers.test.ts`.
 
