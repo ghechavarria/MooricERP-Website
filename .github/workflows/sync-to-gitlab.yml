@@ -1,0 +1,60 @@
+name: Sync to GitLab
+
+# Copies GitHub's branches and tags to gitlab.com/mooring_corp/mooric_website so
+# the two stay the same. Local pushes already go to both remotes; this catches
+# what happens on github.com itself (merging a PR, editing a file, deleting a
+# branch). Needs the GITLAB_TOKEN secret: a GitLab project access token on
+# mooric_website with the Maintainer role and the write_repository scope.
+on:
+  push:
+  delete:
+  schedule:
+    # Pushes to branches without this file don't trigger it; this catches them.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitlab-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Push to GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          GITHUB_READ_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.event.ref_type }}
+          REF: ${{ github.event.ref }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GITLAB_TOKEN" ]; then
+            echo "::error::The GITLAB_TOKEN secret is not set"
+            exit 1
+          fi
+          gitlab="https://oauth2:${GITLAB_TOKEN}@gitlab.com/mooring_corp/mooric_website.git"
+
+          if [ "$EVENT" = "delete" ]; then
+            if [ "$REF_TYPE" = "tag" ]; then dest="refs/tags/$REF"; else dest="refs/heads/$REF"; fi
+            git init -q empty && cd empty  # git push needs a repo, even to delete
+            if git ls-remote --exit-code "$gitlab" "$dest" >/dev/null; then
+              git push "$gitlab" --delete "$dest"
+            else
+              echo "$dest is already gone on GitLab"
+            fi
+            exit 0
+          fi
+
+          git clone --quiet --bare \
+            "https://x-access-token:${GITHUB_READ_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo.git
+          cd repo.git
+          # No --force and no --prune: a branch that went a different way on
+          # GitLab fails here, loudly, instead of being overwritten, and
+          # branches that exist only on GitLab are left alone.
+          git push "$gitlab" 'refs/heads/*:refs/heads/*' 'refs/tags/*:refs/tags/*'
