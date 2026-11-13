@@ -21,7 +21,9 @@ vi.mock("firebase/app", () => ({
   getApp: m.getApp,
 }));
 vi.mock("firebase/auth", () => ({
-  getAuth: m.getAuth,
+  initializeAuth: m.getAuth,
+  indexedDBLocalPersistence: "indexedDB",
+  browserLocalPersistence: "localStorage",
   connectAuthEmulator: m.connectAuthEmulator,
   createUserWithEmailAndPassword: m.createUserWithEmailAndPassword,
   signInWithEmailAndPassword: m.signInWithEmailAndPassword,
@@ -71,6 +73,18 @@ describe("firebase config", () => {
     configure();
     const fb = await load();
     expect(fb.firebaseAvailable()).toBe(true);
+  });
+});
+
+describe("auth setup", () => {
+  it("uses initializeAuth without the popup/redirect helper, so nothing loads from apis.google.com", async () => {
+    configure();
+    const fb = await load();
+    await fb.getIdToken();
+    expect(m.getAuth).toHaveBeenCalledTimes(1);
+    const options = (m.getAuth.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+    expect(options.persistence).toEqual(["indexedDB", "localStorage"]);
+    expect(options).not.toHaveProperty("popupRedirectResolver");
   });
 });
 

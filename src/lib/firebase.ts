@@ -9,10 +9,12 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import {
   TotpMultiFactorGenerator,
+  browserLocalPersistence,
   connectAuthEmulator,
   createUserWithEmailAndPassword,
-  getAuth,
   getMultiFactorResolver,
+  indexedDBLocalPersistence,
+  initializeAuth,
   onAuthStateChanged,
   sendEmailVerification,
   signInWithEmailAndPassword,
@@ -52,7 +54,11 @@ const getAuthInstance = (): Auth => {
   if (authInstance) return authInstance;
   if (!firebaseAvailable()) throw new FirebaseUnavailableError();
   const app: FirebaseApp = getApps().length ? getApp() : initializeApp(readConfig());
-  const auth = getAuth(app);
+  // initializeAuth, not getAuth: getAuth adds the popup/redirect sign-in helper,
+  // which loads a script from apis.google.com that the Content-Security-Policy
+  // does not allow. The site signs in with email, password and TOTP only.
+  // Persistence matches getAuth's default: IndexedDB, then localStorage.
+  const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] });
   // Only a dev server may point at the emulator; a production build never can.
   const emulator = text(import.meta.env.VITE_FIREBASE_EMULATOR);
   if (import.meta.env.DEV && emulator) {
