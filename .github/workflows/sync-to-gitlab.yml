@@ -42,6 +42,7 @@ jobs:
 
           if [ "$EVENT" = "delete" ]; then
             if [ "$REF_TYPE" = "tag" ]; then dest="refs/tags/$REF"; else dest="refs/heads/$REF"; fi
+            git init -q empty && cd empty  # git push needs a repo, even to delete
             if git ls-remote --exit-code "$gitlab" "$dest" >/dev/null; then
               git push "$gitlab" --delete "$dest"
             else
