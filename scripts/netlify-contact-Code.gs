@@ -1,5 +1,17 @@
-var NOTIFY_TO = "gracehechavarria@mooricerp.com";
-var NOTIFY_CC = "";
+// Who gets the notification emails: Project Settings > Script Properties,
+// NOTIFY_TO (required for email) and NOTIFY_CC (optional, comma-separated).
+// Kept out of this file because the repo is public.
+function notifyTo_() {
+  return PropertiesService.getScriptProperties().getProperty("NOTIFY_TO") || "";
+}
+
+function notifyCc_() {
+  return PropertiesService.getScriptProperties().getProperty("NOTIFY_CC") || "";
+}
+
+// Netlify retries a notification within minutes, so a duplicate is always
+// near the bottom of the sheet: only the last rows are checked.
+var DUPLICATE_WINDOW_ROWS = 500;
 
 function escapeHtml_(value) {
   var s = String(value == null ? "" : value);
@@ -8,6 +20,39 @@ function escapeHtml_(value) {
   s = s.split(">").join("&gt;");
   s = s.split('"').join("&quot;");
   return s;
+}
+
+// Sheets runs a cell that starts with one of these as a formula. A leading
+// apostrophe makes Sheets store the value as plain text instead.
+function sheetText_(value) {
+  var s = String(value == null ? "" : value);
+  if (/^[=+\-@\t\r]/.test(s)) {
+    return "'" + s;
+  }
+  return s;
+}
+
+function digest_(value) {
+  return Utilities.base64Encode(
+    Utilities.computeDigest(
+      Utilities.DigestAlgorithm.SHA_256,
+      String(value),
+      Utilities.Charset.UTF_8
+    )
+  );
+}
+
+// The forward-to-sheet Netlify function adds forwardSecret to every request.
+// The same value must be saved in Project Settings > Script Properties as
+// FORWARD_SHARED_SECRET. Without it, every request is refused.
+function hasForwardSecret_(body) {
+  var expected = PropertiesService.getScriptProperties().getProperty(
+    "FORWARD_SHARED_SECRET"
+  );
+  if (!expected || typeof body.forwardSecret != "string") {
+    return false;
+  }
+  return digest_(body.forwardSecret) == digest_(expected);
 }
 
 function jsonResponse_(obj) {
@@ -29,6 +74,10 @@ function doPost(e) {
       raw = e.postData.contents;
     }
     var body = JSON.parse(raw);
+    if (!hasForwardSecret_(body)) {
+      lock.releaseLock();
+      return jsonResponse_({ ok: false, error: "unauthorized" });
+    }
     var fields = {};
     if (body.data) {
       fields = body.data;
@@ -68,9 +117,13 @@ function doPost(e) {
         loans;
     }
 
+    // getValues() returns a stored value without its leading apostrophe, so the
+    // duplicate check compares against the raw id.
     var lastRow = sheet.getLastRow();
     if (submissionId != "" && lastRow > 1) {
-      var existing = sheet.getRange(2, 8, lastRow, 8).getValues();
+      var firstRow = Math.max(2, lastRow - DUPLICATE_WINDOW_ROWS + 1);
+      // column H (8) holds the submission id; one column, recent rows only
+      var existing = sheet.getRange(firstRow, 8, lastRow - firstRow + 1, 1).getValues();
       var i;
       for (i = 0; i < existing.length; i++) {
         var cell = existing[i][0];
@@ -84,13 +137,13 @@ function doPost(e) {
     var receivedAt = new Date();
     sheet.appendRow([
       receivedAt,
-      fullName,
-      email,
-      role,
-      state,
-      loans,
-      message,
-      submissionId
+      sheetText_(fullName),
+      sheetText_(email),
+      sheetText_(role),
+      sheetText_(state),
+      sheetText_(loans),
+      sheetText_(message),
+      sheetText_(submissionId)
     ]);
 
     sendContactEmail_({
@@ -113,7 +166,8 @@ function doPost(e) {
 }
 
 function sendContactEmail_(row) {
-  if (!NOTIFY_TO) {
+  var to = notifyTo_();
+  if (!to) {
     return;
   }
 
@@ -221,11 +275,12 @@ function sendContactEmail_(row) {
   var options = {
     htmlBody: html,
     name: "Mooric ERP Website",
-    replyTo: row.email || NOTIFY_TO
+    replyTo: row.email || to
   };
-  if (NOTIFY_CC) {
-    options.cc = NOTIFY_CC;
+  var cc = notifyCc_();
+  if (cc) {
+    options.cc = cc;
   }
 
-  GmailApp.sendEmail(NOTIFY_TO, subject, plain, options);
+  GmailApp.sendEmail(to, subject, plain, options);
 }
