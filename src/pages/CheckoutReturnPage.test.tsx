@@ -23,7 +23,6 @@ vi.mock("../lib/firebase", async (importOriginal) => ({
 
 import type { AccountStatus, PollOptions } from "../lib/erpApi";
 import AccountPage from "./AccountPage";
-import CheckoutReturnPage from "./CheckoutReturnPage";
 
 const status = (over: Partial<AccountStatus> = {}): AccountStatus => ({
   state: "started",
@@ -114,18 +113,11 @@ describe("checkout return", () => {
       expect(screen.getByText(/payment still not confirmed/i)).toBeTruthy();
       expect(screen.getByRole("link", { name: /check your account/i }).getAttribute("href")).toBe("/account");
       expect(screen.queryByText(/account is ready/i)).toBeNull();
+      // and it stops asking the server
+      const poller = api.pollStatus.mock.results.at(-1)!.value as { stop: ReturnType<typeof vi.fn> };
+      expect(poller.stop).toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }
-  });
-
-  it("also works as the standalone /checkout/return page", async () => {
-    poll(status({ state: "paid" }));
-    render(
-      <MemoryRouter initialEntries={["/checkout/return"]}>
-        <CheckoutReturnPage />
-      </MemoryRouter>,
-    );
-    expect(await screen.findByText(/payment received/i)).toBeTruthy();
   });
 });

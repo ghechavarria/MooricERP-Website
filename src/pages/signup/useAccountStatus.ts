@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ErpApiError, pollStatus, type AccountStatus } from "../../lib/erpApi";
 import { currentSession, firebaseAvailable } from "../../lib/firebase";
 import { friendlyError } from "./errors";
@@ -20,6 +20,7 @@ export type AccountPhase =
 export function useAccountStatus(awaitingPayment: boolean) {
   const [phase, setPhase] = useState<AccountPhase>({ kind: "checking" });
   const [attempt, setAttempt] = useState(0);
+  const pollerRef = useRef<{ stop: () => void } | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +47,7 @@ export function useAccountStatus(awaitingPayment: boolean) {
         return;
       }
       setPhase({ kind: "signed_in", status: null, error: "", email });
-      poller = pollStatus({
+      poller = pollerRef.current = pollStatus({
         onUpdate: (status) => {
           if (!cancelled) setPhase({ kind: "signed_in", status, error: "", email });
         },
@@ -85,5 +86,8 @@ export function useAccountStatus(awaitingPayment: boolean) {
     if (problem) setPhase((prev) => (prev.kind === "signed_in" ? { ...prev, error: problem } : prev));
   }, []);
 
-  return { phase, restart, signOut: leave };
+  /** Stops asking the server; the page keeps the last status it had. */
+  const stopPolling = useCallback(() => pollerRef.current?.stop(), []);
+
+  return { phase, restart, signOut: leave, stopPolling };
 }

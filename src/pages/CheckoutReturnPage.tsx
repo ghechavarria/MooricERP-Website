@@ -47,12 +47,17 @@ const stepsFor = (status: AccountStatus | null) => {
  */
 export default function CheckoutReturnPage() {
   useNoindex();
-  const { phase, restart } = useAccountStatus(true);
+  const { phase, restart, stopPolling } = useAccountStatus(true);
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setTimedOut(true), WAIT_LIMIT_MS);
     return () => clearTimeout(timer);
   }, []);
+  // Once we have told the person to check their account page, stop asking:
+  // that page checks again when they open it.
+  useEffect(() => {
+    if (timedOut) stopPolling();
+  }, [timedOut, stopPolling, phase.kind]);
   const status = phase.kind === "signed_in" ? phase.status : null;
   const described = status ? describeAccount(status) : null;
   const waiting = !described || described.kind === "started" || described.kind === "none";
