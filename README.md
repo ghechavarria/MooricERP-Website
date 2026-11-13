@@ -42,8 +42,8 @@ calls the ERP.
 | `npm run lint` | ESLint |
 | `npm test` | Vitest, including the page tests and the `_headers` generator tests |
 
-Before you push, run `npm run lint`, `npm test` and `npm run build`. There is
-no CI that runs them for you.
+CI runs these on every push (see [CI/CD](#cicd)). Running them before you push
+saves a round trip.
 
 ## Configuration
 
@@ -141,6 +141,34 @@ if Apps Script fails. Failures show up only in the function's logs. Setup:
 - **The policy is report-only for now.** Turn it on for real once the signup
   flow runs clean with it in a browser. See
   [docs/netlify-toml.md](docs/netlify-toml.md).
+
+## CI/CD
+
+`.github/workflows/ci.yml` runs on every push to any branch, and by hand from
+the Actions tab.
+
+| Job | What it does |
+|-----|--------------|
+| **lint** | `npm run lint` |
+| **test** | `npm test` (Vitest) |
+| **build** | `npm run build` twice. With signup **off** (the live site), it checks that no signup page is in the bundle and that the CSP allows no outside connections. With signup **on** (placeholder public values), it checks that the signup pages build and that the CSP lists the ERP API and Turnstile. Both runs fail if a source map ships. |
+| **deploy** | Only on `main`, and only after the three jobs above pass. Runs `netlify deploy --build --prod`, which builds with the site's Netlify environment variables. A commit with `[skip netlify]` in its message doesn't deploy. |
+
+**The deploy job is off until you switch it on.** Until then, Netlify keeps
+deploying `main` itself on every push, as it always has, and CI only reports.
+To move deploys to CI:
+
+1. In Netlify, stop builds from Git: **Site configuration → Build & deploy →
+   Continuous deployment → Stop builds**. Otherwise every push deploys twice.
+2. Add two GitHub repo secrets:
+   - `NETLIFY_AUTH_TOKEN`: a Netlify personal access token.
+   - `NETLIFY_SITE_ID`: from **Site configuration → Site details**.
+3. Set the repo variable `NETLIFY_DEPLOY_FROM_CI` to `true`.
+4. Optional: in GitHub's **production** environment, add required reviewers
+   so every deploy waits for an approval.
+
+Once that's done, a broken lint, test or build blocks the deploy. Today,
+Netlify would publish it anyway.
 
 ## GitHub and GitLab
 
