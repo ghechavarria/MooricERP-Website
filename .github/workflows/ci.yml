@@ -1,0 +1,150 @@
+name: CI/CD
+
+# On every push, to any branch: lint, test, and build twice, once with signup
+# off (the live site) and once with it on. A push to main then deploys to
+# Netlify, if all of those passed.
+#
+# The deploy job is off until the repo variable NETLIFY_DEPLOY_FROM_CI is
+# "true". While it's off, Netlify keeps deploying main on its own, as it does
+# today. Before turning it on:
+#   1. In Netlify, stop builds from Git (Site configuration → Build & deploy →
+#      Continuous deployment → Stop builds), or every push deploys twice.
+#   2. Add the repo secrets NETLIFY_AUTH_TOKEN (a Netlify personal access token)
+#      and NETLIFY_SITE_ID (Site configuration → Site details → Site ID).
+# The deploy builds on Netlify's side of the CLI with the site's own environment
+# variables, so the VITE_* values stay in Netlify only.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Never cancel a deploy halfway; on other branches only the newest push matters.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        signup: ["off", "on"]
+    env:
+      # "off" is what the live site builds today. "on" uses placeholder public
+      # values, only to prove the signup pages compile and the CSP picks them up.
+      VITE_SIGNUP_ENABLED: ${{ matrix.signup == 'on' && 'true' || '' }}
+      VITE_SIGNUP_NAV_ENABLED: ${{ matrix.signup == 'on' && 'true' || '' }}
+      VITE_ERP_URL: ${{ matrix.signup == 'on' && 'https://erp.example.test' || '' }}
+      VITE_ERP_API_URL: ${{ matrix.signup == 'on' && 'https://api.example.test' || '' }}
+      VITE_FIREBASE_API_KEY: ${{ matrix.signup == 'on' && 'ci-placeholder' || '' }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ matrix.signup == 'on' && 'ci-placeholder.firebaseapp.com' || '' }}
+      VITE_FIREBASE_PROJECT_ID: ${{ matrix.signup == 'on' && 'ci-placeholder' || '' }}
+      VITE_FIREBASE_APP_ID: ${{ matrix.signup == 'on' && 'ci-placeholder' || '' }}
+      VITE_TURNSTILE_SITE_KEY: ${{ matrix.signup == 'on' && 'ci-placeholder' || '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - name: Check the build output
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -f dist/_headers
+          if find dist -name '*.map' | grep -q .; then
+            echo "::error::Source maps are in dist/"; exit 1
+          fi
+          if [ "${{ matrix.signup }}" = "off" ]; then
+            # The live build must not route or bundle the signup pages.
+            if ls dist/assets | grep -E '^(PricingPage|RegisterPage|AccountPage|CheckoutReturnPage)-'; then
+              echo "::error::Signup pages are in a signup-off build"; exit 1
+            fi
+            grep -q "connect-src 'self';" dist/_headers
+          else
+            ls dist/assets | grep -q '^RegisterPage-'
+            grep -q "https://api.example.test" dist/_headers
+            grep -q "https://challenges.cloudflare.com" dist/_headers
+          fi
+      - name: Size of the build
+        run: |
+          du -sh dist
+          ls -l dist/assets | sort -k5 -n | tail -5
+
+  deploy:
+    needs: [lint, test, build]
+    if: >-
+      github.ref == 'refs/heads/main'
+      && vars.NETLIFY_DEPLOY_FROM_CI == 'true'
+      && !contains(github.event.head_commit.message, '[skip netlify]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://mooricerp.com
+    concurrency:
+      group: netlify-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Deploy to Netlify (production)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::error::Set the NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID secrets"; exit 1
+          fi
+          # --build runs netlify.toml's build with the site's Netlify environment
+          # variables, then uploads dist/ and the functions.
+          npx --yes netlify-cli@27.16.0 deploy --build --prod \
+            --site "$NETLIFY_SITE_ID" \
+            --message "GitHub Actions ${COMMIT:0:7}"
