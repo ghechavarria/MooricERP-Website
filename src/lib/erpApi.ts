@@ -28,6 +28,8 @@ export type AccountConfig = {
     overage_cents: number;
     /** Free trial length in days; 0 or missing means no free month. */
     trial_days?: number;
+    /** True when price_cents and included_loans are per active user, per month. */
+    per_user?: boolean;
   };
   terms_url: string;
   privacy_url: string;
@@ -47,7 +49,10 @@ export type AccountStatus = {
   /** When a scheduled cancel takes effect (end of the current period); null otherwise. */
   ends_at?: string | null;
   loans_used: number;
+  /** The organization's total for the period (per-user loans times its users). */
   loans_included: number | null;
+  /** Active users billed on the subscription; null before the organization exists. */
+  seats?: number | null;
   erp_url: string | null;
   support_email: string;
   /** The Stripe account's time zone (IANA name), for showing dates. Missing from older ERPs. */

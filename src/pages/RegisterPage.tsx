@@ -10,7 +10,7 @@ import {
   sendVerification,
 } from "../lib/firebase";
 import { friendlyError, isApiCode } from "./signup/errors";
-import { formatMoney } from "./signup/format";
+import { formatMoney, includedLoans, priceUnit, trialLabel } from "./signup/format";
 import {
   Alert,
   Card,
@@ -259,13 +259,13 @@ function PlanSummary({ plan }: { plan: AccountConfig["plan"] }) {
         </div>
         <p className="m-0 text-right">
           <span className="text-2xl font-bold tracking-tight text-[#0a0e14]">{formatMoney(plan.price_cents)}</span>
-          <span className="text-[14px] text-[#48566b]"> / month</span>
+          <span className="text-[14px] text-[#48566b]"> {priceUnit(plan)}</span>
           <span className="block text-[13px] text-[#5b6a80]">+ applicable tax</span>
         </p>
       </div>
       <ul className="m-0 mt-3 grid list-none gap-1.5 border-t border-[#d9e6f5] p-0 pt-3 text-[14px] text-[#2b3648] sm:grid-cols-2">
-        {plan.trial_days ? <li>First month free</li> : null}
-        <li>{plan.included_loans} loans included each month</li>
+        {trialLabel(plan.trial_days) ? <li>{trialLabel(plan.trial_days)}</li> : null}
+        <li>{includedLoans(plan)}</li>
         <li>{formatMoney(plan.overage_cents)} per additional loan</li>
       </ul>
     </section>

@@ -140,6 +140,22 @@ describe("account states", () => {
 });
 
 describe("account links", () => {
+  it("shows the users billed and what they add up to on a per-user plan", async () => {
+    api.config.mockResolvedValue({ plan: { price_cents: 5000, overage_cents: 1500, per_user: true } });
+    serve(status({ billing_status: "active", seats: 3, loans_used: 4, loans_included: 30 }));
+    renderPage();
+    expect(await screen.findByText(/3 users/)).toBeTruthy();
+    expect(await screen.findByText("$50 each, $150 a month")).toBeTruthy();
+    expect(screen.getByText(/4 of 30 loans used/)).toBeTruthy();
+  });
+
+  it("no Users tile before the organization exists", async () => {
+    serve(status({ billing_status: "active", seats: null }));
+    renderPage();
+    expect(await screen.findByText(/loans used/)).toBeTruthy();
+    expect(screen.queryByText("Users")).toBeNull();
+  });
+
   it("suspended user sees portal link and it opens the portal", async () => {
     serve(status({ suspended_reason: "billing", billing_status: "past_due", erp_url: null }));
     renderPage();

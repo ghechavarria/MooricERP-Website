@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { erpApi, ErpApiError, type AccountConfig } from "../lib/erpApi";
 import { friendlyError } from "./signup/errors";
-import { formatMoney } from "./signup/format";
+import { formatMoney, includedLoans, priceUnit, trialLabel } from "./signup/format";
 import { Alert, ghostButton, linkClass, NotAvailable, Notice, primaryButton } from "./signup/Layout";
 import { useNoindex } from "./signup/useNoindex";
 
@@ -95,7 +95,8 @@ function PlanSection({ plan }: { plan: Plan }) {
         included={plan.included_loans}
         overage={formatMoney(plan.overage_cents)}
         price={formatMoney(plan.price_cents)}
-        trial={Boolean(plan.trial_days)}
+        trialDays={plan.trial_days ?? 0}
+        perUser={plan.per_user === true}
       />
     </>
   );
@@ -114,19 +115,24 @@ function PlanCard({ plan }: { plan: Plan }) {
           <span className="text-[clamp(2.75rem,8vw,3.75rem)] font-bold leading-none tracking-tight text-[#0a0e14]">
             {formatMoney(plan.price_cents)}
           </span>
-          <span className="text-[15px] text-[#48566b]">per month</span>
+          <span className="text-[15px] text-[#48566b]">{priceUnit(plan)}</span>
         </p>
         <p className="m-0 mt-2 text-[15px] font-semibold text-[#2b3648]">+ applicable tax</p>
       </div>
       <ul className="m-0 grid min-w-0 list-none gap-3 border-t border-[#e4ebf4] p-0 pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0 lg:pl-10">
-        {plan.trial_days ? (
+        {trialLabel(plan.trial_days) ? (
           <li className="v4-bullet">
-            <span>First month free</span>
+            <span>{trialLabel(plan.trial_days)}</span>
           </li>
         ) : null}
         <li className="v4-bullet">
-          <span>{plan.included_loans} loans included each month</span>
+          <span>{includedLoans(plan)}</span>
         </li>
+        {plan.per_user ? (
+          <li className="v4-bullet">
+            <span>Add as many users as you need</span>
+          </li>
+        ) : null}
         <li className="v4-bullet">
           <span>{formatMoney(plan.overage_cents)} per additional loan</span>
         </li>
@@ -152,25 +158,38 @@ function Questions({
   included,
   overage,
   price,
-  trial,
+  trialDays,
+  perUser,
 }: {
   included: number;
   overage: string;
   price: string;
-  trial: boolean;
+  trialDays: number;
+  perUser: boolean;
 }) {
+  const monthTrial = trialLabel(trialDays) === "First month free";
+  const trialLength = monthTrial ? "a month" : `${trialDays} days`;
+  const allowance = perUser ? `${included} per user` : `${included}`;
   const items = [
-    ...(trial
+    ...(perUser
       ? [
           {
-            q: "Is the first month free?",
-            a: `Yes. Your first month's subscription is free, and your first ${price} charge comes a month after you sign up. Loans past your first ${included} that month are still ${overage} each, added to that first bill.`,
+            q: "How does pricing work for a team?",
+            a: `Each active user is ${price} a month and adds ${included} included loans to your team's monthly total. Add or remove users any time; your next bill follows the number of active users.`,
+          },
+        ]
+      : []),
+    ...(trialDays > 0
+      ? [
+          {
+            q: monthTrial ? "Is the first month free?" : "Is there a free trial?",
+            a: `Yes. Your subscription is free for the first ${trialLength}, and your first charge comes ${trialLength} after you sign up. Loans past your included ${allowance} during the trial are still ${overage} each, added to that first bill.`,
           },
         ]
       : []),
     {
       q: "What counts toward my monthly loans?",
-      a: `Each loan counts once, in the billing period of its application date. The first ${included} in each period are part of your plan.`,
+      a: `Each loan counts once, in the billing period of its application date. The first ${allowance} in each period are part of your plan${perUser ? ", pooled across your team" : ""}.`,
     },
     {
       q: "When am I charged for extra loans?",

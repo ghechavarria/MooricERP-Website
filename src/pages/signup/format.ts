@@ -7,6 +7,21 @@ export const formatMoney = (cents: number): string =>
     maximumFractionDigits: 2,
   }).format(cents / 100);
 
+type PlanWording = { price_cents: number; included_loans: number; trial_days?: number; per_user?: boolean };
+
+/** "per user per month" for per-user plans, "per month" otherwise. */
+export const priceUnit = (plan: PlanWording): string => (plan.per_user ? "per user per month" : "per month");
+
+/** "10 loans included per user each month", or without "per user" for a flat plan. */
+export const includedLoans = (plan: PlanWording): string =>
+  `${plan.included_loans} loans included ${plan.per_user ? "per user " : ""}each month`;
+
+/** "First month free" for a trial of about a month, otherwise "14-day free trial". Blank for none. */
+export const trialLabel = (days: number | undefined): string => {
+  if (!days || days <= 0) return "";
+  return days >= 28 && days <= 31 ? "First month free" : `${days}-day free trial`;
+};
+
 /** Used when the ERP doesn't say which zone Stripe uses (older ERP, or no status yet). */
 export const DEFAULT_TIMEZONE = "America/New_York";
 
