@@ -1,5 +1,17 @@
-var NOTIFY_TO = "gracehechavarria@mooricerp.com";
-var NOTIFY_CC = "";
+// Who gets the notification emails: Project Settings > Script Properties,
+// NOTIFY_TO (required for email) and NOTIFY_CC (optional, comma-separated).
+// Kept out of this file because the repo is public.
+function notifyTo_() {
+  return PropertiesService.getScriptProperties().getProperty("NOTIFY_TO") || "";
+}
+
+function notifyCc_() {
+  return PropertiesService.getScriptProperties().getProperty("NOTIFY_CC") || "";
+}
+
+// Netlify retries a notification within minutes, so a duplicate is always
+// near the bottom of the sheet: only the last rows are checked.
+var DUPLICATE_WINDOW_ROWS = 500;
 
 function escapeHtml_(value) {
   var s = String(value == null ? "" : value);
@@ -109,7 +121,9 @@ function doPost(e) {
     // duplicate check compares against the raw id.
     var lastRow = sheet.getLastRow();
     if (submissionId != "" && lastRow > 1) {
-      var existing = sheet.getRange(2, 8, lastRow, 8).getValues();
+      var firstRow = Math.max(2, lastRow - DUPLICATE_WINDOW_ROWS + 1);
+      // column H (8) holds the submission id; one column, recent rows only
+      var existing = sheet.getRange(firstRow, 8, lastRow - firstRow + 1, 1).getValues();
       var i;
       for (i = 0; i < existing.length; i++) {
         var cell = existing[i][0];
@@ -152,7 +166,8 @@ function doPost(e) {
 }
 
 function sendContactEmail_(row) {
-  if (!NOTIFY_TO) {
+  var to = notifyTo_();
+  if (!to) {
     return;
   }
 
@@ -260,11 +275,12 @@ function sendContactEmail_(row) {
   var options = {
     htmlBody: html,
     name: "Mooric ERP Website",
-    replyTo: row.email || NOTIFY_TO
+    replyTo: row.email || to
   };
-  if (NOTIFY_CC) {
-    options.cc = NOTIFY_CC;
+  var cc = notifyCc_();
+  if (cc) {
+    options.cc = cc;
   }
 
-  GmailApp.sendEmail(NOTIFY_TO, subject, plain, options);
+  GmailApp.sendEmail(to, subject, plain, options);
 }

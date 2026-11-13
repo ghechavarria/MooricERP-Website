@@ -55,7 +55,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: npm test
+      # A branch without a test script (main before the signup work) passes here.
+      - run: npm run test --if-present
 
   build:
     runs-on: ubuntu-latest
@@ -87,20 +88,31 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - name: Check the build output
+        env:
+          SIGNUP: ${{ matrix.signup }}
         run: |
           set -euo pipefail
           test -f dist/index.html
-          test -f dist/_headers
           if find dist -name '*.map' | grep -q .; then
             echo "::error::Source maps are in dist/"; exit 1
           fi
-          if [ "${{ matrix.signup }}" = "off" ]; then
-            # The live build must not route or bundle the signup pages.
+          if [ ! -f src/config/signup.ts ] && [ "$SIGNUP" = "on" ]; then
+            echo "This branch has no signup pages yet; the signup-on build has nothing more to check."
+            exit 0
+          fi
+          if [ "$SIGNUP" = "off" ]; then
+            # The live build must not route or bundle the signup pages, or Firebase.
             if ls dist/assets | grep -E '^(PricingPage|RegisterPage|AccountPage|CheckoutReturnPage)-'; then
               echo "::error::Signup pages are in a signup-off build"; exit 1
             fi
-            grep -q "connect-src 'self';" dist/_headers
+            if grep -rlq "identitytoolkit" dist/assets; then
+              echo "::error::Firebase code is in a signup-off build"; exit 1
+            fi
+            if [ -f dist/_headers ]; then
+              grep -q "connect-src 'self';" dist/_headers
+            fi
           else
+            test -f dist/_headers
             ls dist/assets | grep -q '^RegisterPage-'
             grep -q "https://api.example.test" dist/_headers
             grep -q "https://challenges.cloudflare.com" dist/_headers

@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+# Same major version as .nvmrc and CI (.github/workflows/ci.yml).
+[build.environment]
+  NODE_VERSION = "22"
+
 [functions]
   directory = "netlify/functions"
 
@@ -10,8 +14,8 @@
   to = "/index.html"
   status = 200
 
-# Static security headers. The Content-Security-Policy-Report-Only header depends
-# on environment values, so scripts/write-headers.mjs generates it into
+# Static security headers. The Content-Security-Policy header depends on
+# environment values, so scripts/write-headers.mjs generates it into
 # dist/_headers at build time (see docs/netlify-toml.md).
 [[headers]]
   for = "/*"

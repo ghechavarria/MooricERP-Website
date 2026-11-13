@@ -24,7 +24,7 @@ through Stripe. When payment clears, the ERP creates their organization.
 
 ## Quick start
 
-Needs Node 20.19+ or 22.12+ (Vite 8).
+Needs Node 22 (see `.nvmrc`; Netlify and CI use the same).
 
 ```bash
 npm ci
@@ -45,6 +45,10 @@ calls the ERP.
 CI runs these on every push (see [CI/CD](#cicd)). Running them before you push
 saves a round trip.
 
+Dependencies are pinned to exact versions, and `package-lock.json` is
+committed. Use `npm ci`, and change a version on purpose with
+`npm install <pkg>@<version>`.
+
 ## Configuration
 
 The variables live in `.env.local` locally, and in Netlify under **Project
@@ -57,17 +61,17 @@ to the ERP, never to `VITE_*`.
 
 | Variable | Used for |
 |----------|----------|
-| `VITE_SIGNUP_ENABLED` | `"true"` adds the routes `/pricing`, `/register`, `/account` and `/checkout/return`. Off: they aren't routed and their code isn't built. |
-| `VITE_SIGNUP_NAV_ENABLED` | `"true"` turns on the header Pricing, Get started and account links, plus the footer's legal links. Turn it on only together with `VITE_SIGNUP_ENABLED`. |
+| `VITE_SIGNUP_ENABLED` | `"true"` adds the routes `/pricing`, `/register` and `/account` (`/account?checkout=success` is where Stripe returns). Off: they aren't routed and their code, Firebase included, isn't built. |
+| `VITE_SIGNUP_NAV_ENABLED` | `"true"` turns on the header Pricing, Get started and account links, plus the footer's legal links. It has no effect unless `VITE_SIGNUP_ENABLED` is also on. |
 | `VITE_ERP_URL` | The ERP sign-in page (the "Sign in" link) |
 | `VITE_ERP_API_URL` | Base URL of the ERP API that signup calls (`/api/account/...`). Must be https, and the site's origin must be listed in the ERP's `WEBSITE_ALLOWED_ORIGINS`. |
 | `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` | Firebase web app config (public client values). Must be the same Firebase project the ERP verifies tokens against. |
 | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (public). The ERP holds the secret key and checks the token, including its hostname. |
 | `VITE_FIREBASE_EMULATOR` | Firebase Auth emulator URL. Only `npm run dev` uses it; production builds ignore it. |
 
-Both switches are on only for the exact string `"true"`. With both off, `/`
-and `/team` render the same header as the live site, and a test
-(`src/test/signupSwitches.test.tsx`) checks that against saved HTML.
+Both switches are on only for the exact string `"true"`. With nav off, the
+header and footer render the same HTML as the live site, and a test
+(`src/test/signupSwitches.test.tsx`) checks them against saved copies.
 
 Server-side values for the contact form (Netlify environment, not `VITE_`):
 `NETLIFY_WEBHOOK_SECRET`, `APPS_SCRIPT_WEBHOOK_URL` and
@@ -125,7 +129,7 @@ The flow, step by step, is in [docs/signup-pages.md](docs/signup-pages.md).
 3. Apps Script refuses requests without the shared secret. It skips
    duplicates and writes a row to the sheet. Values that start with `=`, `+`,
    `-` or `@` get a leading apostrophe, so Sheets treats them as text. Then it
-   emails the team.
+   emails the inbox in its `NOTIFY_TO` script property.
 
 The submission is also kept in Netlify's Forms dashboard, so nothing is lost
 if Apps Script fails. Failures show up only in the function's logs. Setup:
@@ -151,7 +155,7 @@ the Actions tab.
 |-----|--------------|
 | **lint** | `npm run lint` |
 | **test** | `npm test` (Vitest) |
-| **build** | `npm run build` twice. With signup **off** (the live site), it checks that no signup page is in the bundle and that the CSP allows no outside connections. With signup **on** (placeholder public values), it checks that the signup pages build and that the CSP lists the ERP API and Turnstile. Both runs fail if a source map ships. |
+| **build** | `npm run build` twice. With signup **off** (the live site), it checks that no signup page and no Firebase code is in the bundle, and that the CSP allows no outside connections. With signup **on** (placeholder public values), it checks that the signup pages build and that the CSP lists the ERP API and Turnstile. Both runs fail if a source map ships. |
 | **deploy** | Only on `main`, and only after the three jobs above pass. Runs `netlify deploy --build --prod`, which builds with the site's Netlify environment variables. A commit with `[skip netlify]` in its message doesn't deploy. |
 
 **The deploy job is off until you switch it on.** Until then, Netlify keeps
@@ -190,8 +194,11 @@ How they stay in sync:
 
 - **Changes made on github.com** (a merge, a web edit, a branch delete): the
   workflow `.github/workflows/sync-to-gitlab.yml` copies them to GitLab within
-  30 minutes, and at once on `main`. It uses the GitHub secret `GITLAB_TOKEN`,
-  a GitLab token with `write_repository`.
+  30 minutes, and at once on `main`.
+  - It signs in with the GitHub secret `GITLAB_DEPLOY_KEY`: an SSH deploy key
+    with write access to mooric_website and nothing else.
+  - If that secret isn't set, it falls back to `GITLAB_TOKEN`, which is a
+    personal token. Delete that one once the deploy key works.
 - **Changes made on gitlab.com** are **not** copied to GitHub. Push them from
   your machine.
 
@@ -206,6 +213,7 @@ The `docs/` folder has a note for most parts of the site. Start with:
 | [signup-pages.md](docs/signup-pages.md) | The signup pages, the flow, errors, password rules, sign-out, Turnstile |
 | [legal-pages.md](docs/legal-pages.md) | How the Terms and Privacy pages are generated from the Word files |
 | [netlify-toml.md](docs/netlify-toml.md) | Headers and the CSP |
+| [netlify-forward-to-sheet.md](docs/netlify-forward-to-sheet.md) | The contact form forwarder and its environment variables |
 | [netlify-contact-apps-script.md](docs/netlify-contact-apps-script.md) | Contact form → Apps Script setup |
 | [v4-homepage.md](docs/v4-homepage.md) | The current homepage design system |
 | [mobile-nav-and-layout.md](docs/mobile-nav-and-layout.md) | Mobile layout rules |

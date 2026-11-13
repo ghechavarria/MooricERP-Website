@@ -13,7 +13,7 @@ Do **not** copy from a markdown code fence (smart quotes can break Apps Script).
 1. Open [`scripts/netlify-contact-Code.gs`](../scripts/netlify-contact-Code.gs) in the repo.
 2. Select all → copy.
 3. Sheet → **Extensions → Apps Script** → select all in `Code.gs` → paste → **Save**.
-4. Set `NOTIFY_TO` / `NOTIFY_CC` at the top if needed.
+4. **Project Settings → Script Properties**: add `NOTIFY_TO` (the inbox that gets each request) and, optionally, `NOTIFY_CC` (comma-separated). They used to be at the top of the script; they live in Script Properties now so no address is in the public repo. Without `NOTIFY_TO` rows are still saved but no email is sent.
 5. **Project Settings (gear icon) → Script Properties → Add script property**: name `FORWARD_SHARED_SECRET`, value the same as Netlify's `FORWARD_SHARED_SECRET` env var. Do this **before** deploying the new version: without it the script refuses every request, and new form submissions stop reaching the sheet and the inbox.
 6. **Deploy → Manage deployments → Edit → New version → Deploy** (Execute as **Me**, Who has access **Anyone**).
 7. Prefer URL `https://script.google.com/macros/s/.../exec` (not `/a/macros/mooricerp.com/...`).
