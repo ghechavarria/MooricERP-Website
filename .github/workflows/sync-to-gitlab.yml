@@ -3,8 +3,14 @@ name: Sync to GitLab
 # Copies GitHub's branches and tags to gitlab.com/mooring_corp/mooric_website so
 # the two stay the same. Local pushes already go to both remotes; this catches
 # what happens on github.com itself (merging a PR, editing a file, deleting a
-# branch). Needs the GITLAB_TOKEN secret: a GitLab project access token on
-# mooric_website with the Maintainer role and the write_repository scope.
+# branch).
+#
+# Credentials, in order of preference:
+# - GITLAB_DEPLOY_KEY: the private half of an SSH deploy key that has write
+#   access to mooric_website only. Nothing else on GitLab can be reached with it.
+# - GITLAB_TOKEN: a personal access token (write_repository). It works for every
+#   project its owner can push to, so it is only a fallback; delete it once the
+#   deploy key works.
 on:
   push:
   delete:
@@ -27,6 +33,7 @@ jobs:
     steps:
       - name: Push to GitLab
         env:
+          GITLAB_DEPLOY_KEY: ${{ secrets.GITLAB_DEPLOY_KEY }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           GITHUB_READ_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
@@ -34,11 +41,23 @@ jobs:
           REF: ${{ github.event.ref }}
         run: |
           set -euo pipefail
-          if [ -z "$GITLAB_TOKEN" ]; then
-            echo "::error::The GITLAB_TOKEN secret is not set"
+          if [ -n "$GITLAB_DEPLOY_KEY" ]; then
+            install -d -m 700 ~/.ssh
+            printf '%s\n' "$GITLAB_DEPLOY_KEY" > ~/.ssh/gitlab_deploy
+            chmod 600 ~/.ssh/gitlab_deploy
+            # GitLab.com's published ED25519 host key
+            # (SHA256:eUXGGm1YGsMAS7vkcx6JOJdOGHPem5gQp4taiCfCLB8)
+            echo "gitlab.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAfuCHKVTjquxvt6CM6tdG4SLp1Btn/nOeHHE5UOzRdf" > ~/.ssh/known_hosts
+            export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/gitlab_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+            gitlab="git@gitlab.com:mooring_corp/mooric_website.git"
+            echo "Using the deploy key"
+          elif [ -n "$GITLAB_TOKEN" ]; then
+            gitlab="https://oauth2:${GITLAB_TOKEN}@gitlab.com/mooring_corp/mooric_website.git"
+            echo "::warning::Using GITLAB_TOKEN; switch to GITLAB_DEPLOY_KEY (see the README)"
+          else
+            echo "::error::Set the GITLAB_DEPLOY_KEY secret"
             exit 1
           fi
-          gitlab="https://oauth2:${GITLAB_TOKEN}@gitlab.com/mooring_corp/mooric_website.git"
 
           if [ "$EVENT" = "delete" ]; then
             if [ "$REF_TYPE" = "tag" ]; then dest="refs/tags/$REF"; else dest="refs/heads/$REF"; fi
