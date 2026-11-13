@@ -12,11 +12,16 @@ import { useSessionHint } from "../lib/sessionHint";
  * goes to the account page, which confirms the sign-out; if it fails, that page
  * has its own Sign out button that shows why.
  */
-const signOutFromHeader = async () => {
-  const { signOutCompletely } = await import("../pages/signup/signOut");
-  const problem = await signOutCompletely();
-  if (problem) window.location.assign(ROUTES.account);
-};
+// The direct comparison lets Vite replace it with a constant, so a signup-off
+// build drops this import and emits no Firebase chunk at all.
+const signOutFromHeader =
+  import.meta.env.VITE_SIGNUP_ENABLED === "true"
+    ? async () => {
+        const { signOutCompletely } = await import("../pages/signup/signOut");
+        const problem = await signOutCompletely();
+        if (problem) window.location.assign(ROUTES.account);
+      }
+    : async () => {};
 
 const HEADER_SECONDARY_BTN =
   "inline-flex items-center justify-center rounded-md border border-organ-200 bg-white font-semibold text-organ-950 transition hover:border-erp hover:text-erp";

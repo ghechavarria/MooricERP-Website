@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-const out = vi.hoisted(() => ({ signOutCompletely: vi.fn(async () => "") }));
+const out = vi.hoisted(() => {
+  // The header only wires up sign-out in a signup build (see signOutFromHeader).
+  vi.stubEnv("VITE_SIGNUP_ENABLED", "true");
+  return { signOutCompletely: vi.fn(async () => "") };
+});
 vi.mock("../config/signup", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../config/signup")>()),
   SIGNUP_NAV_ENABLED: true,
