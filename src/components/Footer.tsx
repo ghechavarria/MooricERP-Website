@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
 
 function LinkedInIcon() {
   return (
@@ -36,7 +37,11 @@ function YouTubeIcon() {
   );
 }
 
-export function Footer() {
+/**
+ * The live site's footer, unchanged. Used while signup nav is off so the page
+ * matches mooricerp.com exactly; src/test/signupSwitches.test.tsx checks it.
+ */
+function LiveFooter() {
   return (
     <footer className="border-t border-[#e4ebf4] bg-white">
       <div className="layout-shell flex flex-col items-center justify-between gap-8 py-[1.8rem] sm:flex-row">
@@ -89,6 +94,79 @@ export function Footer() {
           </a>
         </div>
         <p className="font-mono text-xs text-[#5c6b80]">© {new Date().getFullYear()} Mooric ERP</p>
+      </div>
+    </footer>
+  );
+}
+
+export function Footer() {
+  if (!SIGNUP_NAV_ENABLED) return <LiveFooter />;
+  return (
+    <footer className="border-t border-[#e4ebf4] bg-white">
+      {/* Stacked and tight on phones; from md, three columns: logo, icons
+          centred, and the legal links with the copyright on the right. */}
+      <div className="layout-shell flex flex-col items-center gap-4 py-6 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6 md:py-[1.8rem]">
+        <Link
+          to="/#top"
+          className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl py-1 pl-1 pr-2 md:justify-self-start"
+        >
+          <span
+            className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[10px]"
+            aria-hidden
+          >
+            <img
+              src="/images/square-logo-blue.svg"
+              alt=""
+              width={1024}
+              height={1024}
+              className="h-full w-full object-cover"
+              decoding="async"
+            />
+          </span>
+          <span className="pointer-events-none h-8 w-px shrink-0 bg-organ-200" aria-hidden />
+          <span className="flex min-w-0 flex-col items-start gap-1">
+            <span className="font-display whitespace-nowrap text-[1.0625rem] font-extrabold uppercase leading-none tracking-[0.04em]">
+              <span className="text-organ-950">Mooric </span>
+              <span className="text-erp">ERP</span>
+            </span>
+            <span className="font-display text-[10px] font-semibold uppercase leading-none tracking-[0.18em] text-[#5c6b80]">
+              Corporation
+            </span>
+          </span>
+        </Link>
+        <div className="flex items-center gap-2.5">
+          <a
+            href="https://www.linkedin.com/company/mooricerp"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Mooric ERP on LinkedIn"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
+          >
+            <LinkedInIcon />
+          </a>
+          <a
+            href="https://www.youtube.com/@MooricERP"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Mooric Corporation on YouTube"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8e3] text-[#5a6573] transition hover:border-erp hover:text-erp"
+          >
+            <YouTubeIcon />
+          </a>
+        </div>
+        <div className="flex flex-col items-center gap-2 md:items-end md:justify-self-end">
+          {SIGNUP_NAV_ENABLED ? (
+            <nav aria-label="Legal" className="flex items-center gap-5 whitespace-nowrap text-[13px]">
+              <Link to={ROUTES.terms} className="text-[#5c6b80] transition hover:text-erp">
+                Terms of Use
+              </Link>
+              <Link to={ROUTES.privacy} className="text-[#5c6b80] transition hover:text-erp">
+                Privacy Policy
+              </Link>
+            </nav>
+          ) : null}
+          <p className="m-0 whitespace-nowrap font-mono text-xs text-[#5c6b80]">© {new Date().getFullYear()} Mooric ERP</p>
+        </div>
       </div>
     </footer>
   );

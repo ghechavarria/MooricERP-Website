@@ -1,0 +1,102 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { Hero, HERO_STACKED_QUERY, HERO_YOUTUBE_ID } from "./Hero";
+import { ContactModalProvider } from "../context/ContactModalContext";
+import { MemoryRouter } from "react-router-dom";
+
+const renderHero = () =>
+  render(
+    <MemoryRouter>
+      <ContactModalProvider>
+        <Hero />
+      </ContactModalProvider>
+    </MemoryRouter>,
+  );
+
+// By attribute: an inert slide is left out of role queries.
+const slide = (n: 1 | 2) => document.querySelector(`[aria-roledescription="slide"][aria-label^="${n} of 2"]`) as HTMLElement;
+const current = () => document.querySelector("[aria-current]")?.getAttribute("aria-label");
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe("hero carousel", () => {
+  it("opens on the overview, with the video slide hidden and inert", () => {
+    renderHero();
+    expect(current()).toBe("Show slide 1: Overview");
+    expect(slide(1).getAttribute("aria-hidden")).toBe("false");
+    expect(slide(2).getAttribute("aria-hidden")).toBe("true");
+    expect(slide(2).hasAttribute("inert")).toBe(true);
+  });
+
+  it("next, previous, dots and arrow keys move between slides, and wrap around", () => {
+    renderHero();
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(current()).toBe("Show slide 2: Video");
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(current()).toBe("Show slide 1: Overview");
+    fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
+    expect(current()).toBe("Show slide 2: Video");
+    fireEvent.click(screen.getByRole("button", { name: "Show slide 1: Overview" }));
+    expect(current()).toBe("Show slide 1: Overview");
+    fireEvent.keyDown(slide(1), { key: "ArrowRight" });
+    expect(current()).toBe("Show slide 2: Video");
+    fireEvent.keyDown(slide(2), { key: "ArrowLeft" });
+    expect(current()).toBe("Show slide 1: Overview");
+  });
+
+  it("loads nothing from YouTube until play, then uses the no-cookie player; leaving stops it", () => {
+    renderHero();
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(document.querySelector("iframe")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /play the mooric erp video/i }));
+    const frame = document.querySelector("iframe");
+    expect(frame?.getAttribute("src")).toBe(
+      `https://www.youtube-nocookie.com/embed/${HERO_YOUTUBE_ID}?autoplay=1&rel=0&modestbranding=1`,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
+    expect(document.querySelector("iframe")).toBeNull();
+  });
+
+  it("only the visible slide takes clicks, and the controls sit above the slide strip", () => {
+    renderHero();
+    const strip = slide(1).parentElement as HTMLElement;
+    expect(strip.className).toContain("pointer-events-none");
+    expect(slide(1).className).toContain("pointer-events-auto");
+    expect(slide(2).className).not.toContain("pointer-events-auto");
+    const controls = screen.getByRole("button", { name: "Next slide" }).parentElement as HTMLElement;
+    expect(controls.className.split(" ")).toEqual(expect.arrayContaining(["relative", "z-10"]));
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(slide(2).className).toContain("pointer-events-auto");
+    expect(slide(1).className).not.toContain("pointer-events-auto");
+  });
+
+  it("side by side: the whole hero is the carousel, with the copy on its first slide", () => {
+    renderHero();
+    const carousel = screen.getByRole("region", { name: "Mooric ERP introduction" });
+    expect(slide(1).contains(document.getElementById("hero-heading"))).toBe(true);
+    expect(carousel.contains(slide(2))).toBe(true);
+  });
+
+  it("stacked: the copy stays outside, and only the blue card carousels to the video", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({
+        matches: query === HERO_STACKED_QUERY,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    );
+    renderHero();
+    const carousel = screen.getByRole("region", { name: "Mooric ERP videos" });
+    const heading = document.getElementById("hero-heading") as HTMLElement;
+    expect(carousel.contains(heading)).toBe(false);
+    expect(slide(1).textContent).toMatch(/Empowering better closings/);
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
+    expect(current()).toBe("Show slide 2: Video");
+    expect(heading.isConnected).toBe(true);
+  });
+
+  it("is the BI5DlHQgo5w video", () => {
+    expect(HERO_YOUTUBE_ID).toBe("BI5DlHQgo5w");
+  });
+});
