@@ -142,9 +142,9 @@ if Apps Script fails. Failures show up only in the function's logs. Setup:
 - **`scripts/write-headers.mjs`** builds the Content-Security-Policy from the
   `VITE_*` values. With signup on, it adds the ERP API, Firebase and
   Turnstile.
-- **The policy is report-only for now.** Turn it on for real once the signup
-  flow runs clean with it in a browser. See
-  [docs/netlify-toml.md](docs/netlify-toml.md).
+- **The policy is enforced:** the browser blocks anything it doesn't list.
+  Adding a third-party host (script, font, image, iframe, API) means adding it
+  in `scripts/write-headers.mjs`. See [docs/netlify-toml.md](docs/netlify-toml.md).
 
 ## CI/CD
 

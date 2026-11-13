@@ -1,4 +1,4 @@
-// Writes dist/_headers with the Content-Security-Policy-Report-Only header.
+// Writes dist/_headers with the (enforced) Content-Security-Policy header.
 //
 // The policy depends on environment values (ERP API origin, Firebase auth
 // domain), which netlify.toml cannot read, so it is generated at build time.
@@ -69,7 +69,9 @@ export const buildCsp = (env = {}) => {
     .join("; ");
 };
 
-export const buildHeadersFile = (env = {}) => `/*\n  Content-Security-Policy-Report-Only: ${buildCsp(env)}\n`;
+// Enforced since the manual check with signup on (2026-11-13): every page and the
+// signup flow loaded with no violation. See docs/netlify-toml.md.
+export const buildHeadersFile = (env = {}) => `/*\n  Content-Security-Policy: ${buildCsp(env)}\n`;
 
 const main = () => {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");

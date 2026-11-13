@@ -63,9 +63,9 @@ describe("write-headers CSP", () => {
     expect(buildCsp({ ...on, VITE_ERP_API_URL: "http://api.example.test" })).not.toContain("api.example.test");
   });
 
-  it("emits report-only, never enforcing, in _headers format", () => {
+  it("emits the enforced policy, not report-only, in _headers format", () => {
     const file = buildHeadersFile(on);
-    expect(file.startsWith("/*\n  Content-Security-Policy-Report-Only: ")).toBe(true);
-    expect(file).not.toMatch(/^\s*Content-Security-Policy:/m);
+    expect(file.startsWith("/*\n  Content-Security-Policy: ")).toBe(true);
+    expect(file).not.toContain("Report-Only");
   });
 });
