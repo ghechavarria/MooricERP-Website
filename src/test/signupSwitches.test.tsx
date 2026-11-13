@@ -53,6 +53,41 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+describe("footer", () => {
+  it("footer unchanged when nav off", async () => {
+    // footer-today.html was captured from main's Footer, with the year as YEAR.
+    for (const env of [{}, { VITE_SIGNUP_ENABLED: "true" }, { VITE_SIGNUP_NAV_ENABLED: "true" }]) {
+      vi.resetModules();
+      for (const [k, v] of Object.entries(env)) vi.stubEnv(k, v);
+      const { Footer } = await import("../components/Footer");
+      const { container } = render(
+        <MemoryRouter>
+          <Footer />
+        </MemoryRouter>,
+      );
+      const html = container.innerHTML.replace(String(new Date().getFullYear()), "YEAR");
+      expect(`${html}
+`).toBe(fixture("footer-today.html"));
+      cleanup();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("nav on adds the legal links", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_SIGNUP_ENABLED", "true");
+    vi.stubEnv("VITE_SIGNUP_NAV_ENABLED", "true");
+    const { Footer } = await import("../components/Footer");
+    render(
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("link", { name: "Terms of Use" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Privacy Policy" })).toBeTruthy();
+  });
+});
+
 describe("header", () => {
   it("header unchanged when nav off", async () => {
     // Fixtures were captured from the Header before this change.
@@ -119,6 +154,7 @@ describe("routes", () => {
       </MemoryRouter>,
     );
   const mainHtml = () => document.querySelector("main")!.innerHTML;
+  // /checkout/return is gone (Stripe returns to /account?checkout=success); it stays unrouted
   const newPaths = ["/pricing", "/register", "/account", "/checkout/return"];
 
   it("routes unreachable when signup off", async () => {
@@ -152,8 +188,11 @@ describe("routes", () => {
     renderApp(App, "/account");
     expect(await screen.findByTestId("page-account")).toBeTruthy();
     cleanup();
-    renderApp(App, "/checkout/return");
+    renderApp(App, "/account?checkout=success");
     expect(await screen.findByTestId("page-checkout-return")).toBeTruthy();
+    cleanup();
+    renderApp(App, "/checkout/return"); // Stripe never sends anyone here
+    expect(mainHtml()).toBe("");
     cleanup();
     renderApp(App, "/nope");
     expect(mainHtml()).toBe("");
