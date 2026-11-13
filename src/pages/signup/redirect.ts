@@ -16,13 +16,25 @@ export const safeUrl = (url: string | null | undefined): string | null => {
   }
 };
 
+/** Stripe's hosted Checkout and Customer Portal: the only places redirectTo goes. */
+const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
+
+/** The URL itself when it is an https link to Stripe Checkout or the portal, else null. */
+export const stripeUrl = (url: string | null | undefined): string | null => {
+  const safe = safeUrl(url);
+  if (!safe) return null;
+  const parsed = new URL(safe);
+  return parsed.protocol === "https:" && STRIPE_HOSTS.has(parsed.hostname) ? safe : null;
+};
+
 /**
  * Sends the browser to a URL the server gave us (Stripe Checkout or the Customer
- * Portal). Kept in its own module so tests can replace it, and so only https
- * destinations are ever followed.
+ * Portal). Kept in its own module so tests can replace it. Only https links to
+ * Stripe's own hosts are followed, so a bad server response can't send people
+ * anywhere else.
  */
 export const redirectTo = (url: string): void => {
-  const safe = safeUrl(url);
+  const safe = stripeUrl(url);
   if (!safe) throw new Error("The server sent an invalid link.");
   window.location.assign(safe);
 };

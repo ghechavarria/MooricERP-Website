@@ -25,7 +25,6 @@ const signupPages =
         { path: ROUTES.pricing, Page: lazy(() => import("./pages/PricingPage")) },
         { path: ROUTES.register, Page: lazy(() => import("./pages/RegisterPage")) },
         { path: ROUTES.account, Page: lazy(() => import("./pages/AccountPage")) },
-        { path: ROUTES.checkoutReturn, Page: lazy(() => import("./pages/CheckoutReturnPage")) },
       ]
     : [];
 

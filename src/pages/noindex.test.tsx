@@ -48,7 +48,7 @@ describe("noindex", () => {
   });
 
   it("no noindex once nav is on", async () => {
-    const pages = await load({ VITE_SIGNUP_NAV_ENABLED: "true" });
+    const pages = await load({ VITE_SIGNUP_ENABLED: "true", VITE_SIGNUP_NAV_ENABLED: "true" });
     render(
       <MemoryRouter>
         <pages.PricingPage />

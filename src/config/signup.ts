@@ -2,8 +2,9 @@
  * Build-time switches for the signup and billing pages.
  *
  * Both flags are off unless the variable is exactly the string "true".
- * - SIGNUP_ENABLED: /pricing, /register, /account and /checkout/return exist.
+ * - SIGNUP_ENABLED: /pricing, /register and /account exist.
  * - SIGNUP_NAV_ENABLED: header links (and any homepage or /team buttons) lead to them.
+ *   Needs SIGNUP_ENABLED too: nav on its own would link to pages that aren't routed.
  *
  * ERP_URL is the sign-in page. ERP_API_URL is the API the signup flow calls; it can
  * differ from ERP_URL (staging's API is the public portal service).
@@ -15,7 +16,7 @@ const text = (value: unknown) => (typeof value === "string" ? value : "");
 
 export const readSignupConfig = (env: SignupEnv) => ({
   SIGNUP_ENABLED: isTrue(env.VITE_SIGNUP_ENABLED),
-  SIGNUP_NAV_ENABLED: isTrue(env.VITE_SIGNUP_NAV_ENABLED),
+  SIGNUP_NAV_ENABLED: isTrue(env.VITE_SIGNUP_NAV_ENABLED) && isTrue(env.VITE_SIGNUP_ENABLED),
   ERP_URL: text(env.VITE_ERP_URL),
   ERP_API_URL: text(env.VITE_ERP_API_URL),
 });
@@ -33,7 +34,6 @@ export const ROUTES = {
   pricing: "/pricing",
   register: "/register",
   account: "/account",
-  checkoutReturn: "/checkout/return",
   terms: "/terms",
   privacy: "/privacy",
 } as const;

@@ -31,6 +31,10 @@ describe("signup flags", () => {
     expect(on.SIGNUP_NAV_ENABLED).toBe(true);
   });
 
+  it("keeps nav off while signup itself is off, so no link leads to an unrouted page", () => {
+    expect(readSignupConfig({ VITE_SIGNUP_NAV_ENABLED: "true" }).SIGNUP_NAV_ENABLED).toBe(false);
+  });
+
   it("reads the flags from the build environment", async () => {
     vi.stubEnv("VITE_SIGNUP_ENABLED", "true");
     vi.stubEnv("VITE_SIGNUP_NAV_ENABLED", "true");
@@ -55,7 +59,6 @@ describe("signup flags", () => {
       pricing: "/pricing",
       register: "/register",
       account: "/account",
-      checkoutReturn: "/checkout/return",
       terms: "/terms",
       privacy: "/privacy",
     });

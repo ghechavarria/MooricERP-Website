@@ -13,7 +13,7 @@ Only these pages import `src/lib/firebase.ts` and `src/lib/erpApi.ts`, and all f
 | `/pricing` | `PricingPage.tsx` | `GET /config`. Shows the plan name, price from `price_cents` as "$X per month + applicable tax", included loans, and the overage per loan. Nothing is hardcoded; the amount is formatted from plan data. |
 | `/register` | `RegisterPage.tsx` | Opens on sign-in, centred. "Create an account" switches to the form: a subscription card (plan, price, included loans, overage), first and last name, email, password (rules below), NMLS ID (digits, 1 to 12), Terms and Privacy checkbox (links from `/config`), Turnstile. |
 | `/account` | `AccountPage.tsx` | Sign-in (with authenticator-app challenge) then status. |
-| `/account?checkout=success` | `CheckoutReturnPage.tsx` | Post-payment page. Also routed at `/checkout/return`. |
+| `/account?checkout=success` | `CheckoutReturnPage.tsx` | Post-payment page (Stripe's success URL). |
 
 ### Register flow
 
