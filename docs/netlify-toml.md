@@ -22,7 +22,7 @@ Static headers are set in `netlify.toml` under `[[headers]]` for `/*`:
 
 | Header | Value | Why |
 |--------|-------|-----|
-| `Strict-Transport-Security` | `max-age=31536000` | One year. No `preload` and no `includeSubDomains`: the Mooric subdomains are not all confirmed HTTPS-only. Add `includeSubDomains` only after checking every subdomain. |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | One year, every subdomain too. Checked 2026-11-15: every `*.mooricerp.com` name resolves to Netlify through a wildcard DNS record and none serves a working site; the only planned one, `app.mooricerp.com` (the ERP), is HTTPS on Google Cloud. Any new subdomain must serve HTTPS, including SendGrid link branding (turn on SSL click tracking). No `preload`: leaving the browser preload list takes months. |
 | `X-Content-Type-Options` | `nosniff` | |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | |
 | `X-Frame-Options` | `DENY` | Frame protection (the CSP also carries `frame-ancestors 'none'`). |
