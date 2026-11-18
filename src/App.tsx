@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { ContactModalProvider } from "./context/ContactModalContext";
 import { Header } from "./components/Header";
@@ -15,6 +15,25 @@ import { TeamSection } from "./components/TeamSection";
 import { ContactCTA } from "./components/ContactCTA";
 import { ContactFormModal } from "./components/ContactFormModal";
 import { Footer } from "./components/Footer";
+import { ROUTES } from "./config/signup";
+
+// Signup pages are only registered, and only built into chunks, when the switch is on.
+// The direct comparison lets Vite replace it with a constant and drop the dead imports.
+const signupPages =
+  import.meta.env.VITE_SIGNUP_ENABLED === "true"
+    ? [
+        { path: ROUTES.pricing, Page: lazy(() => import("./pages/PricingPage")) },
+        { path: ROUTES.register, Page: lazy(() => import("./pages/RegisterPage")) },
+        { path: ROUTES.account, Page: lazy(() => import("./pages/AccountPage")) },
+      ]
+    : [];
+
+// Terms of Use and Privacy Policy are always routed: signup links to them, and they
+// stand on their own. Lazy, so they add nothing to the home page's bundle.
+const legalPages = [
+  { path: ROUTES.terms, Page: lazy(() => import("./pages/legal/TermsPage")) },
+  { path: ROUTES.privacy, Page: lazy(() => import("./pages/legal/PrivacyPage")) },
+];
 
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -70,6 +89,17 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/team" element={<TeamPage />} />
+            {[...legalPages, ...signupPages].map(({ path, Page }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <Suspense fallback={null}>
+                    <Page />
+                  </Suspense>
+                }
+              />
+            ))}
           </Routes>
         </main>
         <Footer />

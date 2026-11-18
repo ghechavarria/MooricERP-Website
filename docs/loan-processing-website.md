@@ -2,13 +2,13 @@
 
 React application for **Mooric ERP** — mortgage origination software aimed at **independent loan officers and mortgage brokers**. Copy emphasizes day-to-day LO work: completing the 1003, matching programs, tracking conditions, managing pipeline without spreadsheets, and **Central Loan Memory** as the core differentiator.
 
-Routes: **`/`** (homepage) and **`/team`** (Our Team). See [team-page.md](./team-page.md).
+Routes: **`/`** (homepage), **`/team`** (Our Team, see [team-page.md](./team-page.md)), **`/terms`** and **`/privacy`** ([legal-pages.md](./legal-pages.md)). With `VITE_SIGNUP_ENABLED=true` also **`/pricing`**, **`/register`** and **`/account`** ([signup-pages.md](./signup-pages.md)).
 
 ## Stack
 
 - **Vite** — dev server and production build
 - **React 19** with **TypeScript**
-- **React Router** — `/` and `/team`
+- **React Router** — the routes above
 - **Tailwind CSS** — layout, typography, and theme tokens (`tailwind.config.js`)
 - **Framer Motion** — entrance animations, scroll reveals, floating gradients
 

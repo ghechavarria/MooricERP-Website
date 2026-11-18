@@ -1,0 +1,113 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+
+const api = vi.hoisted(() => ({ config: vi.fn() }));
+vi.mock("../lib/erpApi", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../lib/erpApi")>()),
+  erpApi: { config: api.config },
+}));
+vi.mock("../lib/firebase", () => ({ firebaseAvailable: () => true }));
+
+import { ErpApiError } from "../lib/erpApi";
+import PricingPage from "./PricingPage";
+
+const config = (over: Record<string, unknown> = {}) => ({
+  signup_available: true,
+  plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500 },
+  terms_url: "https://t.example.test",
+  privacy_url: "https://p.example.test",
+  terms_version: "2026-11",
+  ...over,
+});
+
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <PricingPage />
+    </MemoryRouter>,
+  );
+
+beforeEach(() => vi.clearAllMocks());
+
+describe("pricing", () => {
+  it("pricing reads plan data and shows plus tax", async () => {
+    api.config.mockResolvedValue(config());
+    renderPage();
+    expect(await screen.findByText("$50")).toBeTruthy();
+    expect(screen.getByText(/\+ applicable tax/i)).toBeTruthy();
+    expect(screen.getByText(/10 loans included/i)).toBeTruthy();
+    expect(screen.getByText(/\$15 per additional loan/i)).toBeTruthy();
+    expect(screen.getByRole("link", { name: /get started/i }).getAttribute("href")).toBe("/register");
+  });
+
+  it("shows the free first month, and that extra loans are still charged, only when the plan has a trial", async () => {
+    api.config.mockResolvedValue(
+      config({ plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500, trial_days: 30 } }),
+    );
+    const { unmount } = renderPage();
+    expect(await screen.findByText("First month free")).toBeTruthy();
+    expect(screen.getAllByRole("listitem")[0].textContent).toBe("First month free");
+    expect(screen.getByText(/Loans past your included 10 during the trial are still \$15 each/)).toBeTruthy();
+    unmount();
+    api.config.mockResolvedValue(config());
+    renderPage();
+    expect(await screen.findByText("$50")).toBeTruthy();
+    expect(screen.queryByText("First month free")).toBeNull();
+    expect(screen.queryByText(/Is the first month free/)).toBeNull();
+  });
+
+  it("says per user, with a team question, when the plan is per user", async () => {
+    api.config.mockResolvedValue(
+      config({
+        plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500, trial_days: 30, per_user: true },
+      }),
+    );
+    renderPage();
+    expect(await screen.findByText("per user per month")).toBeTruthy();
+    expect(screen.getByText("10 loans included per user each month")).toBeTruthy();
+    expect(screen.getByText("Add as many users as you need")).toBeTruthy();
+    expect(screen.getByText("How does pricing work for a team?")).toBeTruthy();
+    expect(screen.getByText(/Loans past your included 10 per user during the trial/)).toBeTruthy();
+  });
+
+  it("names a trial that isn't a month by its length", async () => {
+    api.config.mockResolvedValue(
+      config({ plan: { code: "monthly", name: "Monthly", price_cents: 5000, included_loans: 10, overage_cents: 1500, trial_days: 14 } }),
+    );
+    renderPage();
+    expect(await screen.findByText("14-day free trial")).toBeTruthy();
+    expect(screen.getByText("Is there a free trial?")).toBeTruthy();
+    expect(screen.queryByText("First month free")).toBeNull();
+  });
+
+  it("formats from plan data, not a fixed price", async () => {
+    api.config.mockResolvedValue(
+      config({ plan: { code: "x", name: "Pro", price_cents: 12950, included_loans: 25, overage_cents: 900 } }),
+    );
+    renderPage();
+    expect(await screen.findByText("$129.50")).toBeTruthy();
+    expect(screen.getByText(/25 loans included/i)).toBeTruthy();
+    expect(screen.getByText(/\$9 per additional loan/i)).toBeTruthy();
+    expect(screen.queryByText("$50")).toBeNull();
+  });
+
+  it("shows not available when the API says so", async () => {
+    api.config.mockRejectedValue(new ErpApiError(503, "not_available", "Signup is not available."));
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /get started/i })).toBeNull();
+  });
+
+  it("shows not available when signup is switched off server side", async () => {
+    api.config.mockResolvedValue(config({ signup_available: false }));
+    renderPage();
+    expect(await screen.findByText(/not available/i)).toBeTruthy();
+  });
+
+  it("shows a retry message when the request fails", async () => {
+    api.config.mockRejectedValue(new ErpApiError(0, "network_error", "Could not reach the server."));
+    renderPage();
+    expect(await screen.findByRole("alert")).toBeTruthy();
+  });
+});

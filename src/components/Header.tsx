@@ -3,6 +3,28 @@ import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
 import { SHOW_CONTACT_ACTIONS } from "../config/contactActions";
+import { ERP_URL, ROUTES, SIGNUP_NAV_ENABLED } from "../config/signup";
+import { useSessionHint } from "../lib/sessionHint";
+
+/**
+ * Signs out from the header. The sign-out code (and Firebase) loads only when
+ * someone clicks, so the main bundle stays without it. On success the browser
+ * goes to the account page, which confirms the sign-out; if it fails, that page
+ * has its own Sign out button that shows why.
+ */
+// The direct comparison lets Vite replace it with a constant, so a signup-off
+// build drops this import and emits no Firebase chunk at all.
+const signOutFromHeader =
+  import.meta.env.VITE_SIGNUP_ENABLED === "true"
+    ? async () => {
+        const { signOutCompletely } = await import("../pages/signup/signOut");
+        const problem = await signOutCompletely();
+        if (problem) window.location.assign(ROUTES.account);
+      }
+    : async () => {};
+
+const HEADER_SECONDARY_BTN =
+  "inline-flex items-center justify-center rounded-md border border-organ-200 bg-white font-semibold text-organ-950 transition hover:border-erp hover:text-erp";
 
 const exploreLinks = [
   { label: "Capabilities", to: "/#capabilities" },
@@ -16,7 +38,7 @@ const exploreLinks = [
 
 function navTopLinks(pathname: string) {
   return [
-    { label: "Pricing", to: "/#contact" },
+    { label: "Pricing", to: SIGNUP_NAV_ENABLED ? ROUTES.pricing : "/#contact" },
     { label: "Team", to: "/team" },
     { label: "Contact", to: pathname === "/team" ? "/team#contact" : "/#contact" },
   ];
@@ -76,11 +98,18 @@ export function Header() {
   const [mobileExploreOpen, setMobileExploreOpen] = useState(false);
   const { pathname, hash } = useLocation();
   const { openContactModal } = useContactModal();
+  const signedIn = useSessionHint();
+  /** Signed in on this browser: the nav swaps its sign-up actions for an Account menu. */
+  const accountNav = SIGNUP_NAV_ENABLED && signedIn;
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
 
   useEffect(() => {
     setExploreOpen(false);
+    setAccountOpen(false);
     setMenuOpen(false);
     setMobileExploreOpen(false);
+    setMobileAccountOpen(false);
   }, [pathname, hash]);
 
   useEffect(() => {
@@ -91,17 +120,18 @@ export function Header() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!menuOpen && !exploreOpen) return undefined;
+    if (!menuOpen && !exploreOpen && !accountOpen) return undefined;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenuOpen(false);
         setExploreOpen(false);
+        setAccountOpen(false);
         setMobileExploreOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen, exploreOpen]);
+  }, [menuOpen, exploreOpen, accountOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1440px)");
@@ -111,6 +141,7 @@ export function Header() {
         setMobileExploreOpen(false);
       } else {
         setExploreOpen(false);
+        setAccountOpen(false);
       }
     };
     mq.addEventListener("change", onViewport);
@@ -191,14 +222,71 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            {accountNav ? (
+              <span
+                className="relative flex items-center"
+                onMouseEnter={() => setAccountOpen(true)}
+                onMouseLeave={() => setAccountOpen(false)}
+              >
+                <button
+                  type="button"
+                  className="nav-link inline-flex items-center gap-1.5 border-0 bg-transparent p-0"
+                  aria-expanded={accountOpen}
+                  aria-haspopup="true"
+                  onClick={() => {
+                    if (window.matchMedia("(hover: none)").matches) {
+                      setAccountOpen((o) => !o);
+                      return;
+                    }
+                    setAccountOpen(true);
+                  }}
+                >
+                  Account
+                  <Chevron open={accountOpen} />
+                </button>
+                <span
+                  className="explore-panel explore-panel-end"
+                  style={{
+                    display: accountOpen ? "flex" : "none",
+                    opacity: accountOpen ? 1 : 0,
+                    transform: accountOpen ? "translateY(0)" : "translateY(-6px)",
+                  }}
+                >
+                  <Link to={ROUTES.account} onClick={() => setAccountOpen(false)}>
+                    Account Details
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountOpen(false);
+                      void signOutFromHeader();
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </span>
+              </span>
+            ) : null}
           </nav>
-          <button
-            type="button"
-            className={`btn-primary-silver ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
-            onClick={() => openContactModal("briefing")}
-          >
-            Book a demo
-          </button>
+          {/* With signup on, Get started is the one primary action; Book a demo steps back to secondary. */}
+          {/* Signed in, the Account menu above replaces both buttons. */}
+          {accountNav ? null : (
+            <button
+              type="button"
+              className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} ml-3 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-4 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+              onClick={() => openContactModal("briefing")}
+            >
+              Book a demo
+            </button>
+          )}
+          {SIGNUP_NAV_ENABLED && !accountNav ? (
+            <Link
+              to={ROUTES.register}
+              className="btn-primary-silver ml-2 shrink-0 px-3 py-2 text-[13px] min-[1800px]:ml-3 min-[1800px]:px-4 min-[1800px]:py-2.5 min-[1800px]:text-sm"
+            >
+              Get started
+            </Link>
+          ) : null}
         </div>
 
         <button
@@ -280,21 +368,72 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                <button
-                  type="button"
-                  className={`btn-primary-silver mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    openContactModal("briefing");
-                  }}
-                >
-                  Book a demo
-                </button>
-                <p
-                  className={`mt-2 text-center text-xs text-organ-600${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
-                >
-                  First month free
-                </p>
+                {accountNav ? (
+                  <>
+                    <button
+                      type="button"
+                      className="flex items-center justify-between rounded-lg px-3 py-3.5 text-left text-[15px] font-medium text-[#3d4757]"
+                      aria-expanded={mobileAccountOpen}
+                      onClick={() => setMobileAccountOpen((o) => !o)}
+                    >
+                      Account
+                      <Chevron open={mobileAccountOpen} />
+                    </button>
+                    {mobileAccountOpen ? (
+                      <>
+                        <Link to={ROUTES.account} className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp" onClick={() => setMenuOpen(false)}>
+                          Account Details
+                        </Link>
+                        <button
+                          type="button"
+                          className="rounded-lg px-3 py-2.5 pl-6 text-[14.5px] font-medium text-[#3d4757] active:text-erp text-left"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            void signOutFromHeader();
+                          }}
+                        >
+                          Sign Out
+                        </button>
+                      </>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    {SIGNUP_NAV_ENABLED && ERP_URL ? (
+                      <a
+                        href={ERP_URL}
+                        className="rounded-lg px-3 py-3.5 text-[15px] font-medium text-[#3d4757] active:text-erp"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Sign in
+                      </a>
+                    ) : null}
+                    {SIGNUP_NAV_ENABLED ? (
+                      <Link
+                        to={ROUTES.register}
+                        className="btn-primary-silver mt-3 block w-full px-3 py-3.5 text-center text-base font-semibold"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Get started
+                      </Link>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={`${SIGNUP_NAV_ENABLED ? HEADER_SECONDARY_BTN : "btn-primary-silver"} mt-3 w-full px-3 py-3.5 text-center text-base font-semibold${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        openContactModal("briefing");
+                      }}
+                    >
+                      Book a demo
+                    </button>
+                    <p
+                      className={`mt-2 text-center text-xs text-organ-600${SHOW_CONTACT_ACTIONS ? "" : " hidden"}`}
+                    >
+                      First month free
+                    </p>
+                  </>
+                )}
               </nav>
             </div>
           </div>,

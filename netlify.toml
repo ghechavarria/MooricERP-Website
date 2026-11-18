@@ -9,12 +9,21 @@
 [functions]
   directory = "netlify/functions"
 
+# The Privacy Policy gives www.mooricerp.com/privacypolicy as its request
+# address; the page itself is /privacy. Must stay above the catch-all.
+[[redirects]]
+  from = "/privacypolicy"
+  to = "/privacy"
+  status = 301
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Security headers for every page.
+# Static security headers. The Content-Security-Policy header depends on
+# environment values, so scripts/write-headers.mjs generates it into
+# dist/_headers at build time (see docs/netlify-toml.md).
 [[headers]]
   for = "/*"
   [headers.values]
