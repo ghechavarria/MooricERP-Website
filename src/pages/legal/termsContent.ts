@@ -6,8 +6,8 @@ export const TERMS: LegalDoc = {
   "title": "Terms of Use",
   "meta": [
     "Mooric ERP Platform for Independent Mortgage Loan Officers",
-    "Effective Date: [Insert Effective Date]",
-    "Last Updated: [Insert Date]"
+    "Effective Date: June 23, 2026",
+    "Last Updated: June 23, 2026"
   ],
   "blocks": [
     {
@@ -65,7 +65,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "You are responsible for all activity under your account. You must keep your credentials confidential, use multi-factor authentication where Mooric makes it available or requires it, and notify us immediately at [security@mooric.com] if you suspect unauthorized access. Accounts are for individual use; you may not share login credentials. Users you invite to your workspace (such as processors or assistants) must accept these Terms, and you are responsible for their compliance."
+      "text": "You are responsible for all activity under your account. You must keep your credentials confidential, use multi-factor authentication where Mooric makes it available or requires it, and notify us immediately at security@mooricerp.com if you suspect unauthorized access. Accounts are for individual use; you may not share login credentials. Users you invite to your workspace (such as processors or assistants) must accept these Terms, and you are responsible for their compliance."
     },
     {
       "kind": "h2",
@@ -174,7 +174,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "Our Privacy Policy, available at https://www.mooric.com/privacy, describes how we collect, use, share, and protect personal information, including information about you as a user and the Customer Data you submit, and is incorporated into these Terms by reference."
+      "text": "Our Privacy Policy, available at https://www.mooricerp.com/privacy, describes how we collect, use, share, and protect personal information, including information about you as a user and the Customer Data you submit, and is incorporated into these Terms by reference."
     },
     {
       "kind": "h2",
@@ -251,7 +251,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "Unless otherwise stated in your order, subscriptions automatically renew for successive periods equal to the initial term at the then-current rate, unless you cancel before the renewal date through your account settings or by contacting [billing@mooric.com]. You authorize Mooric and its payment processor to charge your designated payment method for all fees when due."
+      "text": "Unless otherwise stated in your order, subscriptions automatically renew for successive periods equal to the initial term at the then-current rate, unless you cancel before the renewal date through your account settings or by contacting billing@mooricerp.com. You authorize Mooric and its payment processor to charge your designated payment method for all fees when due."
     },
     {
       "kind": "h3",
@@ -419,7 +419,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "Before filing any claim, each party agrees to try to resolve the dispute informally by sending written notice to the other party describing the dispute and the relief sought. Notices to Mooric should be sent to [legal@mooric.com]. If the dispute is not resolved within forty-five (45) days, either party may proceed under this Section."
+      "text": "Before filing any claim, each party agrees to try to resolve the dispute informally by sending written notice to the other party describing the dispute and the relief sought. Notices to Mooric should be sent to legal@mooricerp.com. If the dispute is not resolved within forty-five (45) days, either party may proceed under this Section."
     },
     {
       "kind": "h3",
@@ -427,7 +427,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "Except for claims that may be brought in small-claims court and claims for injunctive relief to protect intellectual property or Confidential Information, any dispute arising out of or relating to these Terms or the Service will be resolved by final, binding arbitration administered by [the American Arbitration Association under its Commercial Arbitration Rules], before a single arbitrator. The arbitration will take place in [Wilmington, Delaware] or by video conference, and judgment on the award may be entered in any court of competent jurisdiction."
+      "text": "Except for claims that may be brought in small-claims court and claims for injunctive relief to protect intellectual property or Confidential Information, any dispute arising out of or relating to these Terms or the Service will be resolved by final, binding arbitration administered by the American Arbitration Association (AAA) under its Commercial Arbitration Rules, before a single arbitrator. The arbitration will take place in Wilmington, Delaware or by video conference, and judgment on the award may be entered in any court of competent jurisdiction."
     },
     {
       "kind": "h3",
@@ -443,7 +443,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "You may opt out of this arbitration agreement by sending written notice to [legal@mooric.com] within thirty (30) days after you first accept these Terms. Opting out will not affect any other part of these Terms."
+      "text": "You may opt out of this arbitration agreement by sending written notice to legal@mooricerp.com within thirty (30) days after you first accept these Terms. Opting out will not affect any other part of these Terms."
     },
     {
       "kind": "h2",
@@ -451,7 +451,7 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "These Terms are governed by the laws of the State of Delaware, without regard to its conflict-of-laws rules, and by the Federal Arbitration Act as to Section 18. For any matter not subject to arbitration, the parties consent to the exclusive jurisdiction of the state and federal courts located in [New Castle County, Delaware]."
+      "text": "These Terms are governed by the laws of the State of Delaware, without regard to its conflict-of-laws rules, and by the Federal Arbitration Act as to Section 18. For any matter not subject to arbitration, the parties consent to the exclusive jurisdiction of the state and federal courts located in New Castle County, Delaware."
     },
     {
       "kind": "h2",
@@ -506,19 +506,19 @@ export const TERMS: LegalDoc = {
     },
     {
       "kind": "strong",
-      "text": "[Street Address]"
+      "text": "22943 Sandalfoot Blvd"
     },
     {
       "kind": "strong",
-      "text": "[City, State ZIP]"
+      "text": "Boca Raton, FL 33428"
     },
     {
       "kind": "p",
-      "text": "Email: [legal@mooric.com]"
+      "text": "Email: legal@mooricerp.com"
     },
     {
       "kind": "p",
-      "text": "Support: [support@mooric.com]"
+      "text": "Support: support@mooricerp.com"
     },
     {
       "kind": "h2",

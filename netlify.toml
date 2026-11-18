@@ -9,6 +9,13 @@
 [functions]
   directory = "netlify/functions"
 
+# The Privacy Policy gives www.mooricerp.com/privacypolicy as its request
+# address; the page itself is /privacy. Must stay above the catch-all.
+[[redirects]]
+  from = "/privacypolicy"
+  to = "/privacy"
+  status = 301
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

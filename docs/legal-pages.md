@@ -9,15 +9,19 @@
 
 `LegalPage.tsx` renders both: a heading band, an "On this page" list (sticky beside the text from 1024px up, a collapsible box above it on phones and tablets), then the document. Tables are real tables from 768px up and one card per row below that. Each page links to the other at the bottom.
 
-## Content still to fill in before they go live
+## Content filled in from legal (James, 2026-11-18)
 
-The Word documents still contain placeholders, and the pages show them exactly as written. Fix them in the Word files, then regenerate (below):
+The placeholders were filled in the content files directly. The Word documents still have the brackets, so update them too before regenerating, or the placeholders come back.
 
-- **Both:** `[Insert Effective Date]`, `[Insert Date]`, `[Street Address]`, `[City, State ZIP]`
-- **Terms:** `[security@mooric.com]`, `[billing@mooric.com]`, `[legal@mooric.com]` (3 places), `[support@mooric.com]`, `[the American Arbitration Association under its Commercial Arbitration Rules]`, `[Wilmington, Delaware]`, `[New Castle County, Delaware]`
-- **Privacy:** `[www.mooric.com]`, `[privacy@mooric.com]` (2 places), `[privacy request page URL]`, `[phone number]`
-- **Domain:** Terms section 5.6 gives the Privacy Policy address as `https://www.mooric.com/privacy`, and both documents use `mooric.com` email addresses. The site is `mooricerp.com`, so the Privacy Policy is at `https://mooricerp.com/privacy`. Legal should confirm which domain is meant.
+- **Both:** effective date and last updated June 23, 2026. Address 22943 Sandalfoot Blvd, Boca Raton, FL 33428.
+- **Terms:** security@, billing@, legal@ (3 places) and support@mooricerp.com. Arbitration by the American Arbitration Association (AAA) under its Commercial Arbitration Rules, in Wilmington, Delaware. Courts of New Castle County, Delaware. Section 5.6 now gives the Privacy Policy as `https://www.mooricerp.com/privacy`.
+- **Privacy:** the Site is `www.mooricerp.com`, email privacy@mooricerp.com (2 places), requests at `www.mooricerp.com/privacypolicy` (redirects to `/privacy`, see `netlify.toml`), phone (561) 613-7333.
+
+Still open:
+
+- **Privacy request form:** the Privacy Policy says "use the form at www.mooricerp.com/privacypolicy", but that page is the policy itself and has no form. Legal should either drop "the form at" or have a request form built.
 - **Cookie banner:** Privacy section 5 says visitors can turn off analytics and marketing cookies "through our cookie banner". The site has no cookie banner today.
+- **`TERMS_VERSION`** on the ERP should match the effective date, `2026-06`.
 
 The Terms' "New User Acknowledgment" keeps its list but drops the paper signature lines (name, company, signature, date). On the website, the checkbox on `/register` is the acceptance.
 

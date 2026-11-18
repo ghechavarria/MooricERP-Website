@@ -14,7 +14,7 @@ Locks publish directory so form detection always scans Vite’s output (includin
 
 ## SPA fallback
 
-`[[redirects]]` rewrites `/*` → `/index.html` with status `200` so client routes such as [`/team`](./team-page.md) resolve on a static host. Netlify functions are still served before this catch-all.
+The first `[[redirects]]` sends `/privacypolicy` to `/privacy` with a `301`, because the Privacy Policy gives `www.mooricerp.com/privacypolicy` as its request address. It has to stay above the catch-all. The second `[[redirects]]` rewrites `/*` → `/index.html` with status `200` so client routes such as [`/team`](./team-page.md) resolve on a static host. Netlify functions are still served before this catch-all.
 
 ## Security headers
 

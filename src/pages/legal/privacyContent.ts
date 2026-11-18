@@ -5,8 +5,8 @@ export const PRIVACY: LegalDoc = {
   "company": "MOORIC, INC.",
   "title": "Privacy Policy",
   "meta": [
-    "Effective Date: [Insert Effective Date]",
-    "Last Updated: [Insert Date]"
+    "Effective Date: June 23, 2026",
+    "Last Updated: June 23, 2026"
   ],
   "blocks": [
     {
@@ -25,7 +25,7 @@ export const PRIVACY: LegalDoc = {
       "kind": "list",
       "ordered": false,
       "items": [
-        "Our website at [www.mooric.com] and any marketing pages, forms, and emails (the “Site”).",
+        "Our website at www.mooricerp.com and any marketing pages, forms, and emails (the “Site”).",
         "The Mooric ERP platform, including our web and mobile apps, APIs, and integrations (the “Service”), as it relates to information about our account holders and their users."
       ]
     },
@@ -261,7 +261,7 @@ export const PRIVACY: LegalDoc = {
     },
     {
       "kind": "p",
-      "text": "To exercise these rights, email [privacy@mooric.com] or use the form at [privacy request page URL]. We will verify your identity before acting on a request and respond within the time required by law, generally 45 days. You may use an authorized agent where the law allows. We will not discriminate against you for exercising your rights."
+      "text": "To exercise these rights, email privacy@mooricerp.com or use the form at www.mooricerp.com/privacypolicy. We will verify your identity before acting on a request and respond within the time required by law, generally 45 days. You may use an authorized agent where the law allows. We will not discriminate against you for exercising your rights."
     },
     {
       "kind": "p",
@@ -309,19 +309,19 @@ export const PRIVACY: LegalDoc = {
     },
     {
       "kind": "strong",
-      "text": "[Street Address]"
+      "text": "22943 Sandalfoot Blvd"
     },
     {
       "kind": "strong",
-      "text": "[City, State ZIP]"
+      "text": "Boca Raton, FL 33428"
     },
     {
       "kind": "p",
-      "text": "Email: [privacy@mooric.com]"
+      "text": "Email: privacy@mooricerp.com"
     },
     {
       "kind": "p",
-      "text": "Phone: [phone number]"
+      "text": "Phone: (561) 613-7333"
     }
   ]
 };
